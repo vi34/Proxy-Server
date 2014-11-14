@@ -1,0 +1,16 @@
+/Volumes/Macintosh HD/Users/vi34/Documents/учеба/с++/course_proj/.idea
+.idea/
+
+*.1
+
+client/client/a.out
+
+*.pbxproj
+
+server/a.out
+
+*.xcuserstate
+
+*.xcscheme
+
+CMakeLists.txt
