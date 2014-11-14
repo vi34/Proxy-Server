@@ -11,6 +11,9 @@
 #include <cstring>
 #include <unistd.h>
 
+
+const int portnum = 1111;
+
 void error(const char *msg)
 {
     perror(msg);
@@ -19,7 +22,7 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-    int sockfd, newsockfd, portno;
+    int sockfd, newsockfd;
     socklen_t clilen;
     char buffer[256];
     struct sockaddr_in serv_addr, cli_addr;
@@ -32,10 +35,10 @@ int main(int argc, char *argv[])
     if (sockfd < 0)
         error("ERROR opening socket");
     bzero((char *) &serv_addr, sizeof(serv_addr));
-    portno = atoi(argv[1]);
+    //portnum = atoi(argv[1]);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port = htons(portno);
+    serv_addr.sin_port = htons(portnum);
     if (bind(sockfd, (struct sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)
     {
