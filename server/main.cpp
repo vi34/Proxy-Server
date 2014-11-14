@@ -1,5 +1,3 @@
-/* A simple server in the internet domain using TCP
- The port number is passed as an argument */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -10,14 +8,14 @@
 #include <cstdlib>
 #include <cstring>
 #include <unistd.h>
-
+#include <iostream>
 
 const int portnum = 1112;
 
 void error(const char *msg)
 {
     perror(msg);
-    exit(1);
+    //exit(1);
 }
 
 struct sock_handle
@@ -27,7 +25,7 @@ struct sock_handle
     {
         sockfd = socket(AF_INET, SOCK_STREAM, 0);
         if (sockfd < 0)
-            error("ERROR opening socket");
+            perror("ERROR opening socket");
     }
 
     ~sock_handle()
@@ -42,57 +40,62 @@ int main(int argc, char *argv[])
     int sockfd, newsockfd;
     socklen_t clilen;
     char buffer[256];
-    struct sockaddr_in serv_addr, cli_addr;
+    sockaddr_in serv_addr, cli_addr;
     int n;
-
-
 
     sock_handle sock;
 
     int yes=1;
-    // lose "Address already in use" error message
+     //lose "Address already in use" error message
     if (setsockopt(sock.sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
         perror("setsockopt");
-        exit(1);
+        return 0;
     }
 
     bzero((char *) &serv_addr, sizeof(serv_addr));
-    //portnum = atoi(argv[1]);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portnum);
-    if (bind(sock.sockfd, (struct sockaddr *) &serv_addr,
+
+    if (bind(sock.sockfd, (sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)
     {
-        error("ERROR on binding");
+        perror("ERROR on binding");
+        return 0;
     }
-
-
 
     listen(sock.sockfd,5);
     clilen = sizeof(cli_addr);
-    newsockfd = accept(sock.sockfd,
-                       (struct sockaddr *) &cli_addr,
-                       &clilen);
+    newsockfd = accept(sock.sockfd,(sockaddr *) &cli_addr, &clilen);
     if (newsockfd < 0)
     {
-        error("ERROR on accept");
+        perror("ERROR on accept");
+        return 0;
     }
 
     bzero(buffer,256);
     for(int i = 0; i < 3; i++)
     {
-        n = read(newsockfd,buffer,255);
+        n = recv(newsockfd, buffer, strlen(buffer), 0);
         if (n < 0)
         {
             close(newsockfd);
-            error("ERROR reading from socket");
+            perror("ERROR reading from socket");
+            return 0;
         }
-        printf("Here is the message: %s\n",buffer);
+        std::cout << "Here is the message: " << buffer << std::endl;
     }
 
-    n = write(newsockfd,"I got your message",18);
-    if (n < 0) error("ERROR writing to socket");
+    n = send(newsockfd, "I got your message", 18, 0);
+    if (n < 0)
+    {
+        perror("ERROR writing to socket");
+        return 0;
+    }
+    else if (n == 0)
+    {
+        //
+    }
     close(newsockfd);
 
     return 0;
