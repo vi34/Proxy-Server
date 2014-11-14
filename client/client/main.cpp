@@ -12,12 +12,12 @@
 #include <iostream>
 
 
-const int portnum = 1111;
+const int portnum = 1112;
 
 void error(const char *msg)
 {
     perror(msg);
-    exit(0);
+    //exit(0);
 }
 
 struct sock_handle
@@ -66,7 +66,10 @@ int main(int argc, char *argv[])
           server->h_length);
     serv_addr.sin_port = htons(portnum);
     if (connect(sock.sockfd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+    {
         error("ERROR connecting");
+        return 0;
+    }
     for(int i = 0; i < 3; i++)
     {
         printf("Please enter the message: ");

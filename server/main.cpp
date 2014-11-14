@@ -12,13 +12,30 @@
 #include <unistd.h>
 
 
-const int portnum = 1111;
+const int portnum = 1112;
 
 void error(const char *msg)
 {
     perror(msg);
     exit(1);
 }
+
+struct sock_handle
+{
+    int sockfd;
+    sock_handle()
+    {
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        if (sockfd < 0)
+            error("ERROR opening socket");
+    }
+
+    ~sock_handle()
+    {
+        close(sockfd);
+    }
+};
+
 
 int main(int argc, char *argv[])
 {
@@ -27,33 +44,38 @@ int main(int argc, char *argv[])
     char buffer[256];
     struct sockaddr_in serv_addr, cli_addr;
     int n;
-    if (argc < 2) {
-        fprintf(stderr,"ERROR, no port provided\n");
+
+
+
+    sock_handle sock;
+
+    int yes=1;
+    // lose "Address already in use" error message
+    if (setsockopt(sock.sockfd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
+        perror("setsockopt");
         exit(1);
     }
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    if (sockfd < 0)
-        error("ERROR opening socket");
+
     bzero((char *) &serv_addr, sizeof(serv_addr));
     //portnum = atoi(argv[1]);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(portnum);
-    if (bind(sockfd, (struct sockaddr *) &serv_addr,
+    if (bind(sock.sockfd, (struct sockaddr *) &serv_addr,
              sizeof(serv_addr)) < 0)
     {
-        close(sockfd);
         error("ERROR on binding");
     }
 
-    listen(sockfd,5);
+
+
+    listen(sock.sockfd,5);
     clilen = sizeof(cli_addr);
-    newsockfd = accept(sockfd,
+    newsockfd = accept(sock.sockfd,
                        (struct sockaddr *) &cli_addr,
                        &clilen);
     if (newsockfd < 0)
     {
-        close(sockfd);
         error("ERROR on accept");
     }
 
@@ -64,7 +86,6 @@ int main(int argc, char *argv[])
         if (n < 0)
         {
             close(newsockfd);
-            close(sockfd);
             error("ERROR reading from socket");
         }
         printf("Here is the message: %s\n",buffer);
@@ -73,6 +94,6 @@ int main(int argc, char *argv[])
     n = write(newsockfd,"I got your message",18);
     if (n < 0) error("ERROR writing to socket");
     close(newsockfd);
-    close(sockfd);
+
     return 0;
 }
