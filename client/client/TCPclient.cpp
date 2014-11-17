@@ -36,6 +36,10 @@ struct sock_handle
     }
 };
 
+
+std::string message = "GET http://www.example.com/ HTTP/1.1";
+std::string addr = "localhost";
+
 int main(int argc, char *argv[])
 {
     int n;
@@ -49,7 +53,7 @@ int main(int argc, char *argv[])
     //sockfd = socket(AF_INET, SOCK_STREAM, 0);
     //if (sockfd < 0)
       //  error("ERROR opening socket");
-    server = gethostbyname(argv[1]);
+    server = gethostbyname(addr.c_str());
     if (server == NULL) {
         std::cout << "ERROR, no such host\n";
         return 0;
@@ -67,12 +71,13 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    for(int i = 0; i < 3; i++)
+    for(int i = 0; i < 10; i++)
     {
+
         std::cout << "Please enter the message: ";
-        bzero(buffer,256);
-        fgets(buffer,255,stdin);
-        n = send(sock.sockfd, buffer, strlen(buffer), 0);
+        std::cin >> message;
+
+        n = send(sock.sockfd, message.c_str(), message.length(), 0);
         if (n < 0)
             error("ERROR writing to socket");
         else if (n < strlen(buffer))
@@ -81,11 +86,10 @@ int main(int argc, char *argv[])
         }
     }
 
-
     bzero(buffer,256);
 
 
-    n = recv(sock.sockfd, buffer, 255, 0);
+   // n = recv(sock.sockfd, buffer, 255, 0);
     if (n < 0)
         error("ERROR reading from socket");
 
