@@ -10,6 +10,7 @@
 #include <cstring>
 #include <unistd.h>
 #include <iostream>
+#include "../../server/TCPSocket.cpp"
 
 
 const int portnum = 1112;
@@ -20,7 +21,7 @@ void error(const char *msg)
     //exit(0);
 }
 
-struct sock_handle
+/*struct sock_handle
 {
     int sockfd;
     sock_handle()
@@ -35,7 +36,7 @@ struct sock_handle
         close(sockfd);
     }
 };
-
+*/
 
 std::string message = "GET http://www.example.com/ HTTP/1.1";
 std::string addr = "localhost";
@@ -49,10 +50,7 @@ int main(int argc, char *argv[])
     std::string buf;
     char buffer[256];
 
-    sock_handle sock;
-    //sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    //if (sockfd < 0)
-      //  error("ERROR opening socket");
+    tcp_socket sock;
     server = gethostbyname(addr.c_str());
     if (server == NULL) {
         std::cout << "ERROR, no such host\n";
@@ -65,7 +63,7 @@ int main(int argc, char *argv[])
           server->h_length);
     serv_addr.sin_port = htons(portnum);
 
-    if (connect(sock.sockfd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+    if (connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
     {
         perror("ERROR connecting");
         return 0;
@@ -77,7 +75,7 @@ int main(int argc, char *argv[])
         std::cout << "Please enter the message: ";
         std::cin >> message;
 
-        n = send(sock.sockfd, message.c_str(), message.length(), 0);
+        n = send(sock.fd, message.c_str(), message.length(), 0);
         if (n < 0)
             error("ERROR writing to socket");
         else if (n < strlen(buffer))
