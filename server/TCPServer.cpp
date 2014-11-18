@@ -12,10 +12,11 @@
 #include <iostream>
 #include <netdb.h>
 #include <vector>
+#include <map>
 
 
 const int PORTNUM = 1112;
-const int BACKLOG = 50;
+const int BACKLOG = 100;
 
 
 void error(const char *msg)
@@ -44,12 +45,6 @@ struct tcp_socket
             throw tcp_exception("ERROR opening socket");
     }
 
-    tcp_socket(tcp_socket &&s)
-    {
-        fd = s.fd;//////
-        s.fd = -1;
-    }
-
     tcp_socket(int l_fd, sockaddr* client_addr, socklen_t* client_len)
     {
         fd = accept(l_fd, client_addr, client_len);
@@ -59,7 +54,21 @@ struct tcp_socket
         }
     }
 
+    tcp_socket(tcp_socket &&s)
+    {
+        fd = s.fd;//////
+        s.fd = -1;
+    }
+
+
+
     tcp_socket(tcp_socket const& s) = delete;
+
+    tcp_socket(tcp_socket &s)
+    {
+        fd = s.fd;
+        s.fd = -1;
+    }
 
     ~tcp_socket()
     {
@@ -108,40 +117,45 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    struct kevent ev[100];
-    std::vector<tcp_socket> client_sockets;
-    int ev_count = 1;
-    struct kevent event_list[100];
-    EV_SET(&ev[0], listener.fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-
+    struct kevent ev;
+    std::map<int, tcp_socket> client_sockets;
+    EV_SET(&ev, listener.fd, EVFILT_READ, EV_ADD, 0, 0, 0);
     bool work = true;
-    int cllll = 0;
-
+    int client_num = 0;
     std::string buf;
+    int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    if (kevent_res == -1) {
+        perror("kevent");
+        return 0;
+    }
     while (work) {
-        int nev = kevent(kq, ev, ev_count, event_list, ev_count, NULL);
-        if(nev < 0)
+        memset(&ev, 0, sizeof(ev));
+        kevent_res = kevent(kq, NULL, 0, &ev, 1, NULL);
+        if(kevent_res < 0)
         {
             perror("kevent()");
             return 0;
         }
-        if(nev > 0)
+        if(kevent_res > 0)
         {
-            for(int i = 0; i < nev; ++i)
-            {
-                if(event_list[i].ident == listener.fd)
+                if(ev.ident == listener.fd)
                 {
-                    //tcp_socket nsock(listener.fd, (sockaddr *) &client_addr, &client_len);
-
-
-                    client_sockets.push_back(tcp_socket (listener.fd, (sockaddr *) &client_addr, &client_len));
-                    EV_SET(&ev[ev_count++], client_sockets[client_sockets.size() - 1].fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-                     std::cout << "client " << cllll++ << " connected" << std::endl;
+                    tcp_socket s_tmp(listener.fd, (sockaddr *) &client_addr, &client_len);
+                    int tmp_fd = s_tmp.fd;
+                   // s_tmp.fd = -1;
+                    client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp));
+                    EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
+                    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+                    if (kevent_res == -1) {
+                        perror("kevent");
+                        return 0;
+                    }
+                     std::cout << "client " << tmp_fd << " connected" << std::endl;
                     //recv(nsock.fd, buffer, 511, 0);
                 }
                 else {
                     bzero(buffer,512);
-                    if((n = recv(event_list[i].ident, buffer, 511, 0)) < 0)
+                    if((n = recv(ev.ident, buffer, 511, 0)) < 0)
                     {
                         perror("read from socket");
                         return 0;
@@ -149,15 +163,16 @@ int main(int argc, char *argv[])
                     else if(n == 0)
                     {
                         std::cout << "client disconnected" << std::endl;
-                        //
+                        client_sockets.erase(ev.ident);
+
+
                     }
                     else {
                         buf = buffer;
-                        std::cout << buf << std::endl << std::endl;
+                        std::cout <<"client " << ev.ident << ": " << buf << std::endl;
                     }
 
                 }
-            }
 
         }
 
