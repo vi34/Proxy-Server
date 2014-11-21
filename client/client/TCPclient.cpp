@@ -12,43 +12,18 @@
 #include <iostream>
 #include "../../server/TCPSocket.cpp"
 
-
 const int portnum = 1112;
 
-void error(const char *msg)
-{
-    perror(msg);
-    //exit(0);
-}
-
-/*struct sock_handle
-{
-    int sockfd;
-    sock_handle()
-    {
-        sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if (sockfd < 0)
-            error("ERROR opening socket");
-    }
-
-    ~sock_handle()
-    {
-        close(sockfd);
-    }
-};
-*/
-
-std::string message = "GET http://www.example.com/ HTTP/1.1";
+std::string message = "klm";
 std::string addr = "localhost";
 
 int main(int argc, char *argv[])
 {
-    int n;
+
     sockaddr_in serv_addr;
     hostent *server;
-
     std::string buf;
-    char buffer[256];
+    char buffer[512];
 
     tcp_socket sock;
     server = gethostbyname(addr.c_str());
@@ -65,34 +40,39 @@ int main(int argc, char *argv[])
 
     if (connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
     {
-        perror("ERROR connecting");
-        return 0;
+        throw tcp_exception("ERROR connecting");
     }
 
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 2; i++)
     {
 
         std::cout << "Please enter the message: ";
         std::cin >> message;
-
+        int n;
         n = send(sock.fd, message.c_str(), message.length(), 0);
         if (n < 0)
-            error("ERROR writing to socket");
-        else if (n < strlen(buffer))
-        {
-            // some data wasn't sent
-        }
+            throw tcp_exception("ERROR writing to socket");
+
     }
 
-    bzero(buffer,256);
+    std::string message = "";
+    ssize_t nread;
+    bzero(buffer,512);
+    do {
+        if((nread = recv(sock.fd, buffer, 511, 0)) < 0)
+        {
+            throw tcp_exception("read from socket");
+        }
+        else if(nread == 0)
+        {
+            std::cout << "client "<< sock.fd << " disconnected" << std::endl;
+        }
+        else {
+            message.append(buffer);
+        }
+    } while (nread == 511);
 
-
-   // n = recv(sock.sockfd, buffer, 255, 0);
-    if (n < 0)
-        error("ERROR reading from socket");
-
-    buf = buffer;
-    std::cout << buf;
-    //close(sockfd);
+    std::cout << message;
+    
     return 0;
 }

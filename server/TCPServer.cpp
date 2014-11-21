@@ -14,9 +14,11 @@
 #include <map>
 #include "TCPServer.h"
 
-const int PORTNUM = 1112;
 const int BACKLOG = 100;
 
+struct server_exception {
+    
+};
 
 TCPServer::TCPServer(int port)
 {
@@ -27,24 +29,24 @@ TCPServer::TCPServer(int port)
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
     int yes = 1;
+    if ((kq = kqueue()) == -1) {
+        throw tcp_exception("kqueue()");
+    }
     if (setsockopt(listener.fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
-        perror("setsockopt");
-        return;
+        close(kq);
+        throw tcp_exception("setsockopt");
     }
     if (bind(listener.fd, (sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     {
-        perror("ERROR on binding");
-        return;
+        close(kq);
+        throw tcp_exception("ERROR on binding");
     }
     if(listen(listener.fd,BACKLOG) == -1)
     {
-        perror("listen");
-        return;
+        close(kq);
+        throw tcp_exception("listen");
     }
-    if ((kq = kqueue()) == -1) {
-        perror("kqueue");
-        return;
-    }
+
 
 }
 
@@ -53,32 +55,76 @@ TCPServer::~TCPServer()
     close(kq);
 }
 
+void TCPServer::stop()
+{
+    running = false;
+}
+
+void TCPServer::test()
+{
+    //std::cout << "WOW" << std::endl;
+}
+
+std::string TCPServer::read_from(int fd)
+{
+    std::string message = "";
+    char buffer[512];
+    ssize_t nread;
+    bzero(buffer,512);
+    do {
+        if((nread = recv(fd, buffer, 511, 0)) < 0)
+        {
+            throw tcp_exception("read from socket");
+        }
+        else if(nread == 0)
+        {
+            std::cout << "client "<< fd << " disconnected" << std::endl;
+            client_sockets.erase(fd);
+            return message;
+        }
+        else {
+            message.append(buffer);
+        }
+    } while (nread == 511);
+
+    doOnRead(message,fd);
+    return message;
+}
+
+void TCPServer::send_to(int fd, std::string message)
+{
+    ssize_t n;
+    n = send(fd, message.c_str(), message.length(), 0);
+    if (n < 0)
+        throw tcp_exception("ERROR writing to socket");
+}
 
 void TCPServer::run()
 {
 
-    char buffer[512];
+    running = true;
     std::string buf;
     socklen_t client_len;
     sockaddr_in client_addr;
     client_len = sizeof(client_addr);
-    int nread;
-    std::map<int, tcp_socket> client_sockets;
+
+
     struct kevent ev;
     EV_SET(&ev, listener.fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-    int client_num = 0;
     int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
     if (kevent_res == -1) {
-        perror("kevent");
+        throw tcp_exception("kevent()");
         return;
     }
-    while (true) {
+
+    while (running) {
         memset(&ev, 0, sizeof(ev));
         kevent_res = kevent(kq, NULL, 0, &ev, 1, NULL);
         if(kevent_res < 0)
         {
-            perror("kevent()");
-            return;
+            if(!running)
+                return;
+            throw tcp_exception("kevent()");
         }
         if(kevent_res > 0)
         {
@@ -90,44 +136,16 @@ void TCPServer::run()
                     EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
                     kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
                     if (kevent_res == -1) {
-                        perror("kevent");
-                        return;
+                        throw tcp_exception("kevent");
                     }
+                    doOnAccept();
                     std::cout << "client " << tmp_fd << " connected" << std::endl;
                 }
                 else {
-                    bzero(buffer,512);
-                    if((nread = recv(ev.ident, buffer, 511, 0)) < 0)
-                    {
-                        perror("read from socket");
-                        return;
-                    }
-                    else if(nread == 0)
-                    {
-                        std::cout << "client "<< ev.ident << " disconnected" << std::endl;
-                        client_sockets.erase(ev.ident);
-                    }
-                    else {
-                        buf = buffer;
-                        std::cout <<"client " << ev.ident << ": " << buf << std::endl;
-                    }
-
+                    buf = read_from(ev.ident);
                 }
-
         }
-        /*
-        //std::string s = "I got your ";
-        //s += buffer;
-        //n = send(nsock.fd,  s.c_str(), 18 + s.length(), 0);
-        if (n < 0)
-        {
-            perror("ERROR writing to socket");
-            return 0;
-        }
-        else if (n == 0)
-        {
-            //
-        }
-         */
     }
 }
+
+

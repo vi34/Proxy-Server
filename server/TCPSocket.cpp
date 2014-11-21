@@ -16,15 +16,16 @@
 #include <sys/socket.h>
 #include <string>
 #include <unistd.h>
+#include <iostream>
+#include <fcntl.h>
 
 struct tcp_exception {
     std::string message;
     tcp_exception(std::string s)
     {
-        message = s;
+        message = s + ": " + strerror(errno);
     }
 };
-// remember about perror() when catch expection
 
 struct tcp_socket
 {
@@ -34,7 +35,7 @@ struct tcp_socket
         fd = socket(AF_INET, SOCK_STREAM, 0);
 
         if (fd < 0)
-            throw tcp_exception("ERROR opening socket");
+            throw tcp_exception("ERROR opening socket:");
     }
 
     tcp_socket(int l_fd, sockaddr* client_addr, socklen_t* client_len)
@@ -44,11 +45,12 @@ struct tcp_socket
         {
             throw tcp_exception("ERROR on accept");
         }
+        //fcntl(fd, F_SETFL, O_NONBLOCK);
     }
 
     tcp_socket(tcp_socket &&s)
     {
-        fd = s.fd;//////
+        fd = s.fd;
         s.fd = -1;
     }
 

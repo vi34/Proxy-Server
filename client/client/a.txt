@@ -1,0 +1,11 @@
+GET http://yandex.ru/yandsearch?text=333&clid=1955453 HTTP/1.1
+Host: yandex.ru
+Proxy-Connection: keep-alive
+Cache-Control: max-age=0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2062.124 YaBrowser/14.10.2062.12057 Safari/537.36
+Accept-Encoding: gzip,deflate,sdch
+Accept-Language: ru,en;q=0.8
+Cookie: z=s:l:0xf34d3df:1416229510260; fuid01=50b3a6aa31585a9d.oqj3_6r_7fVoiCrJE3uMAGpvQzmj8akvAOUBswWkJrIiyNAYXpHn-7Akk99m_SiiKfbOpBYswEfJzY8LJpteEbJXIJVV7RWhw40BnDmPflXbeP7RfmvtKw0EPh9gl-o0; L=dFN4CVFXXQlHXwdDcWZeQlEOXUVcYll5ZVkdDldmbQ==.1413312960.11249.392569.522041c3b8bbade965b18c4a4e47ce36; yandex_login=Viteg34; my=YycCAAEoAgKqsDYBAQA=; yandexuid=338531421353343719; yandex_gid=2; Session_id=3:1416335167.5.0.1413312960000:FjVwWQ:56.0|76115725.0.2|119659.440507.NIwg8kz51J5oLfljZ3X5iMdIZDE; yabs-frequency=/4/9W0108FURbG19MPK/pIuH7ECRN0000W00/; yp=1416928179.cnps.9311420352:max#1729178456.sp.nd:20:aflt:1412954456#1728672960.udn.cDpWaXRlZzM0#1731701626.yb.14_10_2062_12057:1955450:1415981759:1416341626:4#1418812136.ygu.1; ys=notificationschrome.1%23wprid.1416552066657756-589885936352570656718905-3-029%23weatherchrome.2
+
+YycCAAEoAgKqsDYBAQA=; yandexuid=338531421353343719; yandex_gid=2; Session_id=3:1416335167.5.0.1413312960000:FjVwWQ:56.0|76115725.0.2|119659.440507.NIwg8kz51J5oLfljZ3X5iMdIZDE; yabs-frequency=/4/9W0108FURbG19MPK/pIuH7ECRN0000W00/; yp=1416928179.cnps.93
