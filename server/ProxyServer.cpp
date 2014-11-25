@@ -29,22 +29,25 @@ void signal_handler(int sig)
 int main ()
 {
     signal(SIGINT, signal_handler);
+    signal(SIGTERM, signal_handler);
 
-    int clients[100];
     try {
         TCPServer server(1112);
         serv = &server;
-        server.doOnAccept = [&server](){
-            //cout << "YABI YABI DOOO!!!" << endl;
-            server.test();
-
+        server.doOnAccept = [&server](int fd){
+            std::cout << "client " << fd << " connected" << std::endl;
+            server.send_to(fd, "Hello");
         };
 
-        server.doOnRead = [&server, &clients](string message, int fd) {
+        server.doOnRead = [&server](string message, int fd) {
             std::cout <<"client " << fd << ": " << message << std::endl;
-            clients[fd]++;
-            if(clients[fd] == 2)
-                server.send_to(fd, "OK, bye");
+            int sock = server.connect_to("localhost", 1113);
+            server.send_to(sock, message);
+        };
+
+        server.doOnDisconnect = [&server](int fd){
+            std::cout << "client " << fd << " disconnected" << std::endl;
+
         };
 
 

@@ -19,16 +19,16 @@ struct TCPServer {
     void stop();
     ~TCPServer();
 
-    bool running;
-
     std::string read_from(int fd);
     void send_to(int fd, std::string message);
 
-    void test();
+    int connect_to(std::string addr, int port);
 
-    std::function<void()> doOnAccept;
+    std::function<void(int fd)> doOnAccept;
+    std::function<void(int fd)> doOnDisconnect;
     std::function<void(std::string s, int fd)> doOnRead;
 private:
+    bool running;
     tcp_socket listener;
     int kq;
     std::map<int, tcp_socket> client_sockets;

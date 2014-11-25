@@ -16,10 +16,6 @@
 
 const int BACKLOG = 100;
 
-struct server_exception {
-    
-};
-
 TCPServer::TCPServer(int port)
 {
 
@@ -60,11 +56,6 @@ void TCPServer::stop()
     running = false;
 }
 
-void TCPServer::test()
-{
-    //std::cout << "WOW" << std::endl;
-}
-
 std::string TCPServer::read_from(int fd)
 {
     std::string message = "";
@@ -78,8 +69,8 @@ std::string TCPServer::read_from(int fd)
         }
         else if(nread == 0)
         {
-            std::cout << "client "<< fd << " disconnected" << std::endl;
             client_sockets.erase(fd);
+            doOnDisconnect(fd);
             return message;
         }
         else {
@@ -97,6 +88,39 @@ void TCPServer::send_to(int fd, std::string message)
     n = send(fd, message.c_str(), message.length(), 0);
     if (n < 0)
         throw tcp_exception("ERROR writing to socket");
+}
+
+int TCPServer::connect_to(std::string addr, int port)
+{
+    sockaddr_in serv_addr;
+    hostent *server;
+
+    tcp_socket s_tmp;
+    server = gethostbyname(addr.c_str());
+    if (server == NULL) {
+        std::cout << "ERROR, no such host\n";
+    }
+
+    serv_addr.sin_family = AF_INET;
+    bcopy((char *)server->h_addr,
+          (char *)&serv_addr.sin_addr.s_addr,
+          server->h_length);
+    serv_addr.sin_port = htons(port);
+
+    if (connect(s_tmp.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+    {
+        throw tcp_exception("ERROR connecting");
+    }
+    int tmp_fd = s_tmp.fd;
+    struct kevent ev;
+    client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp)); //
+    EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
+    int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    if (kevent_res == -1) {
+        throw tcp_exception("kevent()");
+    }
+    return tmp_fd;
+
 }
 
 void TCPServer::run()
@@ -128,22 +152,30 @@ void TCPServer::run()
         }
         if(kevent_res > 0)
         {
-                if(ev.ident == listener.fd)
-                {
+            if(ev.ident == listener.fd)
+            {
+                try {
                     tcp_socket s_tmp(listener.fd, (sockaddr *) &client_addr, &client_len);
                     int tmp_fd = s_tmp.fd;
                     client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp));
                     EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
                     kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
                     if (kevent_res == -1) {
-                        throw tcp_exception("kevent");
+                        throw tcp_exception("kevent()");
                     }
-                    doOnAccept();
-                    std::cout << "client " << tmp_fd << " connected" << std::endl;
+                    doOnAccept(tmp_fd);
+                } catch (tcp_exception e) {
+                    std::cout << e.message << std::endl;
                 }
-                else {
+            }
+            else {
+                try {
                     buf = read_from(ev.ident);
+                } catch (tcp_exception e) {
+                    std::cout << e.message << std::endl;
                 }
+
+            }
         }
     }
 }

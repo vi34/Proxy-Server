@@ -31,7 +31,6 @@ int main(int argc, char *argv[])
         std::cout << "ERROR, no such host\n";
         return 0;
     }
-    bzero((char *) &serv_addr, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     bcopy((char *)server->h_addr,
           (char *)&serv_addr.sin_addr.s_addr,
@@ -40,7 +39,7 @@ int main(int argc, char *argv[])
 
     if (connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
     {
-        throw tcp_exception("ERROR connecting");
+        std::cout << tcp_exception("ERROR connecting").message;
     }
 
     for(int i = 0; i < 2; i++)
@@ -51,7 +50,7 @@ int main(int argc, char *argv[])
         int n;
         n = send(sock.fd, message.c_str(), message.length(), 0);
         if (n < 0)
-            throw tcp_exception("ERROR writing to socket");
+             std::cout << tcp_exception("ERROR writing to socket").message;
 
     }
 
@@ -61,7 +60,7 @@ int main(int argc, char *argv[])
     do {
         if((nread = recv(sock.fd, buffer, 511, 0)) < 0)
         {
-            throw tcp_exception("read from socket");
+             std::cout << tcp_exception("read from socket").message;
         }
         else if(nread == 0)
         {

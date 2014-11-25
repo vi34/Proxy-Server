@@ -14,3 +14,11 @@ server/a.out
 *.xcscheme
 
 CMakeLists.txt
+
+*.xcbkptlist
+
+*.xcbkptlist
+
+server.xcodeproj/xcuserdata/vi34.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+
+server.xcodeproj/xcuserdata/vi34.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
