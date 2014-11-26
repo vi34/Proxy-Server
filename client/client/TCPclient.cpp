@@ -40,6 +40,8 @@ int main(int argc, char *argv[])
     if (connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
     {
         std::cout << tcp_exception("ERROR connecting").message;
+        return 0;
+
     }
 
     for(int i = 0; i < 2; i++)
@@ -50,7 +52,10 @@ int main(int argc, char *argv[])
         int n;
         n = send(sock.fd, message.c_str(), message.length(), 0);
         if (n < 0)
+        {
              std::cout << tcp_exception("ERROR writing to socket").message;
+            return 0;
+        }
 
     }
 
@@ -60,7 +65,8 @@ int main(int argc, char *argv[])
     do {
         if((nread = recv(sock.fd, buffer, 511, 0)) < 0)
         {
-             std::cout << tcp_exception("read from socket").message;
+            std::cout << tcp_exception("read from socket").message;
+            return 0;
         }
         else if(nread == 0)
         {

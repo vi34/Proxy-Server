@@ -10,30 +10,20 @@
 #include <iostream>
 #include <queue>
 #include "TCPServer.h"
-#include <signal.h>
 
 
 using namespace std;
 
 long long INF = 10000000000;
 
-
 TCPServer* serv;
-
-void signal_handler(int sig)
-{
-    cout << endl << "-_- NO DUDE, NO... " << endl;
-    serv->stop();
-}
 
 int main ()
 {
-    signal(SIGINT, signal_handler);
-    signal(SIGTERM, signal_handler);
-
     try {
         TCPServer server(1112);
         serv = &server;
+
         server.doOnAccept = [&server](int fd){
             std::cout << "client " << fd << " connected" << std::endl;
             server.send_to(fd, "Hello");
@@ -49,7 +39,6 @@ int main ()
             std::cout << "client " << fd << " disconnected" << std::endl;
 
         };
-
 
         server.run();
     } catch (tcp_exception exc) {

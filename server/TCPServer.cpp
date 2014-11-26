@@ -138,8 +138,21 @@ void TCPServer::run()
     int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
     if (kevent_res == -1) {
         throw tcp_exception("kevent()");
-        return;
     }
+
+    signal(SIGINT, SIG_IGN);
+    EV_SET(&ev, SIGINT, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
+    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    if (kevent_res == -1) {
+        throw tcp_exception("kevent()");
+    }
+    signal(SIGTERM, SIG_IGN);
+    EV_SET(&ev, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
+    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    if (kevent_res == -1) {
+        throw tcp_exception("kevent()");
+    }
+
 
     while (running) {
         memset(&ev, 0, sizeof(ev));
@@ -167,6 +180,11 @@ void TCPServer::run()
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
                 }
+            }
+            else if(ev.filter == EVFILT_SIGNAL && (ev.ident == SIGINT || ev.ident == SIGTERM))
+            {
+                std::cout << std::endl << "-_- NO DUDE, NO... " << std::endl;
+                return;
             }
             else {
                 try {
