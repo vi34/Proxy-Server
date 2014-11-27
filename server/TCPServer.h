@@ -21,12 +21,12 @@ struct TCPServer {
 
     std::string read_from(int fd);
     void send_to(int fd, std::string message);
-
     int connect_to(std::string addr, int port);
+    void close_client(int fd);
 
-    std::function<void(int fd)> doOnAccept;
-    std::function<void(int fd)> doOnDisconnect;
-    std::function<void(std::string s, int fd)> doOnRead;
+    std::function<void(int fd)> do_on_accept;
+    std::function<void(int fd)> do_on_disconnect;
+    std::function<void(std::string s, int fd)> do_on_read;
 private:
     bool running;
     tcp_socket listener;

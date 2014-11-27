@@ -70,7 +70,7 @@ std::string TCPServer::read_from(int fd)
         else if(nread == 0)
         {
             client_sockets.erase(fd);
-            doOnDisconnect(fd);
+            do_on_disconnect(fd);
             return message;
         }
         else {
@@ -78,8 +78,13 @@ std::string TCPServer::read_from(int fd)
         }
     } while (nread == 511);
 
-    doOnRead(message,fd);
+    do_on_read(message,fd);
     return message;
+}
+
+void TCPServer::close_client(int fd)
+{
+    client_sockets.erase(fd);
 }
 
 void TCPServer::send_to(int fd, std::string message)
@@ -176,9 +181,13 @@ void TCPServer::run()
                     if (kevent_res == -1) {
                         throw tcp_exception("kevent()");
                     }
-                    doOnAccept(tmp_fd);
+                    do_on_accept(tmp_fd);
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
+                }
+                catch (...)
+                {
+                    std::cout << "user exception" << std::endl;
                 }
             }
             else if(ev.filter == EVFILT_SIGNAL && (ev.ident == SIGINT || ev.ident == SIGTERM))
@@ -187,10 +196,14 @@ void TCPServer::run()
                 return;
             }
             else {
+                std::exception_ptr eptr;
                 try {
                     buf = read_from(ev.ident);
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
+                } catch (...)
+                {
+                    std::cout << "user exception" << std::endl;
                 }
 
             }

@@ -18,24 +18,36 @@ long long INF = 10000000000;
 
 TCPServer* serv;
 
+struct usr_exception {
+    std::string message;
+    usr_exception(std::string s)
+    {
+message = s + ": " + strerror(errno);
+    }
+};
+
+
 int main ()
 {
     try {
         TCPServer server(1112);
         serv = &server;
 
-        server.doOnAccept = [&server](int fd){
+        server.do_on_accept = [&server](int fd){
             std::cout << "client " << fd << " connected" << std::endl;
             server.send_to(fd, "Hello");
         };
 
-        server.doOnRead = [&server](string message, int fd) {
+        server.do_on_read = [&server](string message, int fd) {
+
+            server.close_client(fd);
             std::cout <<"client " << fd << ": " << message << std::endl;
-            int sock = server.connect_to("localhost", 1113);
-            server.send_to(sock, message);
+            throw std::exception();
+            //int sock = server.connect_to("localhost", 1113);
+            //server.send_to(sock, message);
         };
 
-        server.doOnDisconnect = [&server](int fd){
+        server.do_on_disconnect = [&server](int fd){
             std::cout << "client " << fd << " disconnected" << std::endl;
 
         };
