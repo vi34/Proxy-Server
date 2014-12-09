@@ -1,3 +1,6 @@
+
+
+
 #include <cstdio>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,72 +15,49 @@
 #include <iostream>
 #include "../../server/TCPSocket.cpp"
 
+#ifndef server_TCPClient_h
+#define server_TCPClient_h
+
 const int portnum = 1112;
 
-std::string message = "klm";
-std::string addr = "localhost";
 
-int main(int argc, char *argv[])
-{
+struct tcp_client{
 
-    sockaddr_in serv_addr;
-    hostent *server;
-    std::string buf;
-    char buffer[512];
-
-    tcp_socket sock;
-    server = gethostbyname(addr.c_str());
-    if (server == NULL) {
-        std::cout << "ERROR, no such host\n";
-        return 0;
-    }
-    serv_addr.sin_family = AF_INET;
-    bcopy((char *)server->h_addr,
-          (char *)&serv_addr.sin_addr.s_addr,
-          server->h_length);
-    serv_addr.sin_port = htons(portnum);
-
-    if (connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+    tcp_client(std::string addr)
     {
-        std::cout << tcp_exception("ERROR connecting").message;
-        return 0;
+        server = gethostbyname(addr.c_str());
+        if (server == NULL) {
+            throw tcp_exception("no such host");
+        }
+        serv_addr.sin_family = AF_INET;
+        bcopy((char *)server->h_addr,
+              (char *)&serv_addr.sin_addr.s_addr,
+              server->h_length);
+        serv_addr.sin_port = htons(portnum);
 
     }
-
-    for(int i = 0; i < 2; i++)
+    void connect()
     {
+        if (::connect(sock.fd,(const sockaddr*)&serv_addr,sizeof(serv_addr)) < 0)
+        {
+            std::cout << tcp_exception("ERROR connecting").message;
+        }
+    }
 
-        std::cout << "Please enter the message: ";
-        std::cin >> message;
+    void send(std::string message)
+    {
+        std::string buf;
         int n;
-        n = send(sock.fd, message.c_str(), message.length(), 0);
+        n = ::send(sock.fd, message.c_str(), message.length(), 0);
         if (n < 0)
         {
-             std::cout << tcp_exception("ERROR writing to socket").message;
-            return 0;
+            std::cout << tcp_exception("ERROR writing to socket").message;
         }
-
     }
+private:
+    tcp_socket sock;
+    sockaddr_in serv_addr;
+    hostent *server;
+};
 
-    std::string message = "";
-    ssize_t nread;
-    bzero(buffer,512);
-    do {
-        if((nread = recv(sock.fd, buffer, 511, 0)) < 0)
-        {
-            std::cout << tcp_exception("read from socket").message;
-            return 0;
-        }
-        else if(nread == 0)
-        {
-            std::cout << "client "<< sock.fd << " disconnected" << std::endl;
-        }
-        else {
-            message.append(buffer);
-        }
-    } while (nread == 511);
-
-    std::cout << message;
-    
-    return 0;
-}
+#endif
