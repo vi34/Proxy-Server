@@ -13,10 +13,11 @@
 #include <vector>
 #include <map>
 #include "TCPServer.h"
+#include "KqueueWrap.h"
 
 const int BACKLOG = 100;
 
-TCPServer::TCPServer(int port)
+TCPServer::TCPServer(Kqueue_wrap& kq_i, int port):kq(kq_i)
 {
 
     sockaddr_in serv_addr;
@@ -24,31 +25,58 @@ TCPServer::TCPServer(int port)
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
+    std::string buf;
+    socklen_t client_len;
+    sockaddr_in client_addr;
+    client_len = sizeof(client_addr);
+
+
     int yes = 1;
-    if ((kq = kqueue()) == -1) {
-        throw tcp_exception("kqueue()");
-    }
+   
     if (setsockopt(listener.fd,SOL_SOCKET,SO_REUSEADDR,&yes,sizeof(int)) == -1) {
-        close(kq);
         throw tcp_exception("setsockopt");
     }
     if (bind(listener.fd, (sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     {
-        close(kq);
         throw tcp_exception("ERROR on binding");
     }
     if(listen(listener.fd,BACKLOG) == -1)
     {
-        close(kq);
         throw tcp_exception("listen");
     }
+
+    /*kq.set_event(listener.fd, [&](int fd){
+        try {
+            tcp_socket s_tmp(listener.fd, (sockaddr *) &client_addr, &client_len);
+            int tmp_fd = s_tmp.fd;
+            client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp));
+
+          //  kq.set_event(tmp_fd, read_from);
+            do_on_accept(tmp_fd);
+        } catch (tcp_exception e) {
+            std::cout << e.message << std::endl;
+        }
+        catch (...)
+        {
+            std::cout << "user exception" << std::endl;
+        }
+    });*/
 
 
 }
 
+void TCPServer::event()
+{
+    
+}
+
+int TCPServer::get_fd()
+{
+    return listener.fd;
+}
+
 TCPServer::~TCPServer()
 {
-    close(kq);
 }
 
 void TCPServer::stop()
@@ -58,6 +86,7 @@ void TCPServer::stop()
 
 std::string TCPServer::read_from(int fd)
 {
+
     std::string message = "";
     char buffer[512];
     ssize_t nread;
@@ -120,7 +149,7 @@ int TCPServer::connect_to(std::string addr, int port)
     struct kevent ev;
     client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp)); //
     EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-    int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    int kevent_res = kevent(kq.get_fd(), &ev, 1, NULL, 0, NULL);
     if (kevent_res == -1) {
         throw tcp_exception("kevent()");
     }
@@ -132,36 +161,21 @@ void TCPServer::run()
 {
 
     running = true;
-    std::string buf;
-    socklen_t client_len;
-    sockaddr_in client_addr;
-    client_len = sizeof(client_addr);
 
 
     struct kevent ev;
     EV_SET(&ev, listener.fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-    int kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
+    int kevent_res = kevent(kq.get_fd(), &ev, 1, NULL, 0, NULL);
     if (kevent_res == -1) {
         throw tcp_exception("kevent()");
     }
 
-    signal(SIGINT, SIG_IGN);
-    EV_SET(&ev, SIGINT, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
-    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
-    if (kevent_res == -1) {
-        throw tcp_exception("kevent()");
-    }
-    signal(SIGTERM, SIG_IGN);
-    EV_SET(&ev, SIGTERM, EVFILT_SIGNAL, EV_ADD, 0, 0, NULL);
-    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
-    if (kevent_res == -1) {
-        throw tcp_exception("kevent()");
-    }
+    
 
 
     while (running) {
         memset(&ev, 0, sizeof(ev));
-        kevent_res = kevent(kq, NULL, 0, &ev, 1, NULL);
+        kevent_res = kevent(kq.get_fd(), NULL, 0, &ev, 1, NULL);
         if(kevent_res < 0)
         {
             if(!running)
@@ -172,23 +186,7 @@ void TCPServer::run()
         {
             if(ev.ident == listener.fd)
             {
-                try {
-                    tcp_socket s_tmp(listener.fd, (sockaddr *) &client_addr, &client_len);
-                    int tmp_fd = s_tmp.fd;
-                    client_sockets.insert(std::pair<int, tcp_socket>(s_tmp.fd,s_tmp));
-                    EV_SET(&ev,tmp_fd, EVFILT_READ, EV_ADD, 0, 0, 0);
-                    kevent_res = kevent(kq, &ev, 1, NULL, 0, NULL);
-                    if (kevent_res == -1) {
-                        throw tcp_exception("kevent()");
-                    }
-                    do_on_accept(tmp_fd);
-                } catch (tcp_exception e) {
-                    std::cout << e.message << std::endl;
-                }
-                catch (...)
-                {
-                    std::cout << "user exception" << std::endl;
-                }
+
             }
             else if(ev.filter == EVFILT_SIGNAL && (ev.ident == SIGINT || ev.ident == SIGTERM))
             {
@@ -198,7 +196,7 @@ void TCPServer::run()
             else {
                 std::exception_ptr eptr;
                 try {
-                    buf = read_from(ev.ident);
+                    read_from(ev.ident);
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
                 } catch (...)

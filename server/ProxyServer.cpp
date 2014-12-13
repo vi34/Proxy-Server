@@ -22,7 +22,8 @@ TCPServer* serv;
 int main ()
 {
     try {
-        TCPServer server(1112);
+        Kqueue_wrap kq;
+        TCPServer server(kq, 1112);
         serv = &server;
 
         server.do_on_accept = [&server](int fd){
