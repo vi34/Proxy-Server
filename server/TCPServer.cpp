@@ -80,11 +80,6 @@ int TCPServer::get_fd()
     return listener.fd;
 }
 
-void TCPServer::close_client(int fd)
-{
-    clients.erase(fd);
-}
-
 client* TCPServer::connect_to(std::string addr, int port)
 {
     sockaddr_in serv_addr;

@@ -73,3 +73,8 @@ void client::send(std::string message)
         throw tcp_exception("ERROR writing to socket");
 }
 
+void client::close()
+{
+    server->clients.erase(socket.fd);
+}
+

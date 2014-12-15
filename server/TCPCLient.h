@@ -23,6 +23,7 @@ struct client: TCPObject {
 
     std::string read();
     void send(std::string message);
+    void close();
     virtual int get_fd();
     virtual void event();
     void set_read_callback(std::function<void(std::string, client*)> f) {do_on_read = f;};

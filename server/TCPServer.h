@@ -20,7 +20,6 @@ struct TCPServer: TCPObject {
     TCPServer(Kqueue_wrap& kq,int port);
 
     client* connect_to(std::string addr, int port);
-    void close_client(int fd);
     virtual void event();
     virtual int get_fd();
 

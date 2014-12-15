@@ -30,9 +30,10 @@ int main ()
 
         server.set_read_callback([&server, &mes](std::string message, client* c) {
             mes = message;
+
             //server.close_client(fd);
             std::cout <<"client " << c->get_fd() << ": " << message << std::endl;
-
+            c->close();
             //int sock = server.connect_to("localhost", 1113);
         });
 
