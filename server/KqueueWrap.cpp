@@ -24,7 +24,12 @@ Kqueue_wrap::~Kqueue_wrap()
 void Kqueue_wrap::add_to_watch(TCPObject *obj)
 {
     struct kevent ev;
-
+    EV_SET(&ev,obj->get_fd(), EVFILT_READ, EV_ADD, 0, 0, 0);
+    int kevent_res = kevent(fd, &ev, 1, NULL, 0, NULL);
+    if (kevent_res == -1) {
+        throw tcp_exception("kevent()");
+    }
+    watches[obj->get_fd()] = obj;
 }
 
 void Kqueue_wrap::run()
@@ -47,6 +52,10 @@ void Kqueue_wrap::run()
     while(running)
     {
         kevent_res = kevent(fd, NULL, 0, &ev, 1, NULL);
+        if(kevent_res < 0)
+        {
+            throw tcp_exception("kevent()");
+        }
         if(kevent_res > 0)
         {
             if(ev.filter == EVFILT_SIGNAL && (ev.ident == SIGINT || ev.ident == SIGTERM))
@@ -54,10 +63,10 @@ void Kqueue_wrap::run()
                 std::cout << std::endl << "-_- NO DUDE, NO... " << std::endl;
                 return;
             } else {
-                 events[ev.ident](ev.ident);
+                
+                watches[ev.ident]->event();
             }
         }
-
     }
 }
 

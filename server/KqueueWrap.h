@@ -29,6 +29,7 @@ struct Kqueue_wrap{
 private:
     int fd;
     bool running;
+    std::map<int, TCPObject*> watches;
     
     
 };

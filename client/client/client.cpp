@@ -13,13 +13,13 @@
 #include "../../server/TCPSocket.cpp"
 #include "TCPclient.cpp"
 
-
 int main(int argc, char *argv[])
 {
-
     try {
         tcp_client client("localhost");
         client.connect();
+
+        std::cout << client.read() << std::endl;
 
         std::string message;
         for(int i = 0; i < 2; ++i)

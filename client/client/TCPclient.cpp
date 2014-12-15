@@ -15,11 +15,13 @@
 #include <iostream>
 #include "../../server/TCPSocket.cpp"
 
+
+
 #ifndef server_TCPClient_h
 #define server_TCPClient_h
 
-const int portnum = 1112;
 
+const int portnum = 1112;
 
 struct tcp_client{
 
@@ -54,6 +56,30 @@ struct tcp_client{
             std::cout << tcp_exception("ERROR writing to socket").message;
         }
     }
+
+    std::string read()
+    {
+        std::string message = "";
+        char buffer[512];
+        ssize_t nread;
+        bzero(buffer,512);
+        do {
+            if((nread = recv(sock.fd, buffer, 511, 0)) < 0)
+            {
+                throw tcp_exception("read from socket");
+            }
+            else if(nread == 0)
+            {
+                return message;
+            }
+            else {
+                message.append(buffer);
+            }
+        } while (nread == 511);
+
+        return message;
+    }
+
 private:
     tcp_socket sock;
     sockaddr_in serv_addr;
