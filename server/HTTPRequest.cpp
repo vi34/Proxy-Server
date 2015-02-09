@@ -1,15 +1,16 @@
 //
-//  HttpRequest.cpp
+//  HTTPRequest.cpp
 //  server
 //
 //  Created by Виктор Шатров on 16.12.14.
-//  Copyright (c) 2014 Виктор Шатров. All rights reserved222.
+//  Copyright (c) 2014 Виктор Шатров. All rights reserved.
 //
 
 #include <cstdio>
 #include <string>
 
 struct request {
+    const std::string VERSION = "1.1";
     std::string method;
     std::string uri;
     std::string version;
@@ -22,4 +23,8 @@ struct request {
 
         return res;
     }
+
+private:
+
+
 };

@@ -13,6 +13,7 @@
 #include "TCPObject.h"
 #include "TCPCLient.h"
 #include <map>
+#include <vector>
 
 struct client;
 

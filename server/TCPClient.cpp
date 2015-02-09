@@ -18,6 +18,7 @@ void client::event()
 {
 
 
+    std::vector<char> mess;
     std::string message = "";
     char buffer[BUF_SIZE];
     ssize_t nread;
@@ -54,7 +55,7 @@ void client::event()
             return;
         }
         else {
-            message.append(buffer);
+            message.append(buffer, 0, nread);
         }
     } while (nread == BUF_SIZE);
 

@@ -88,7 +88,7 @@ client* TCPServer::connect_to(std::string addr, int port)
     tcp_socket s_tmp;
     server = gethostbyname(addr.c_str());
     if (server == NULL) {
-        std::cout << "ERROR, no such host\n";
+        throw tcp_exception("ERROR, no such host\n");
     }
 
     serv_addr.sin_family = AF_INET;

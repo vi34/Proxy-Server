@@ -7,7 +7,7 @@
 //
 
 #include "TCPCLient.h"
-const int BUF_SIZE = 2048;
+const int BUF_SIZE = 4;
 
 int client::get_fd()
 {
@@ -21,8 +21,8 @@ void client::event()
     std::string message = "";
     char buffer[BUF_SIZE];
     ssize_t nread;
-    bzero(buffer,BUF_SIZE);
     do {
+        bzero(buffer,BUF_SIZE);
         if((nread = recv(socket.fd, buffer, BUF_SIZE, 0)) < 0)
         {
             throw tcp_exception("read from socket");
@@ -53,7 +53,7 @@ void client::event()
             return;
         }
         else {
-            message.append(buffer);
+            message.append(buffer,0,nread);
         }
     } while (nread == BUF_SIZE);
 

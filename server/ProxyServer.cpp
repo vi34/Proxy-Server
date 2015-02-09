@@ -23,22 +23,22 @@ int main ()
         Kqueue_wrap kq;
         TCPServer server(kq, 1112);
         string mes;
-
-        bool conn = false;
-        server.set_accept_callback([&server, &conn](client* c){
+        server.set_accept_callback([&server](client* c){
             std::cout << "client " << c->get_fd() << " connected" << std::endl;
-           // c->send("Thank you for using vi34 Proxy");
-
         });
 
         server.set_read_callback([&server, &mes](std::string message, client* c) {
-
             int k = message.find("Host: ");
             k += 6;
             int kk = message.find("\r\n",k);
             string host = message.substr(k, kk - k);
-            //server.close_client(fd);
+            //c->close();
             std::cout <<"client " << c->get_fd() << ": " << host << std::endl;
+
+
+            string mess = message;
+            std::cout << mess << std::endl;
+
 
             client* c2 = server.connect_to(host, 80);
             c2->set_read_callback([c](std::string message, client* c2){
@@ -48,6 +48,20 @@ int main ()
             c2->send(message);
 
 
+
+            /*
+            request req;
+            req.method = "GET";
+            req.host = "www.opera.com";
+            req.uri = "/";
+            req.version = "HTTP/1.1";
+
+            client* c2 = server.connect_to(req.host, 80);
+            c2->set_read_callback([c](std::string message, client* c2){
+                c->send(message);
+            });
+            c2->send(req.build());
+             */
             //c->close();
             //int sock = server.connect_to("localhost", 1113);
         });
