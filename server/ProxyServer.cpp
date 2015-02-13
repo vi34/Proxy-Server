@@ -10,7 +10,8 @@
 #include <iostream>
 #include <queue>
 #include "TCPServer.h"
-#include "NetworkManager.h"
+#include "HTTPServer.h"
+#include "HTTPClient.h"
 
 
 using namespace std;
@@ -20,9 +21,21 @@ long long INF = 10000000000;
 int main ()
 {
     try {
-        Kqueue_wrap kq;
-        TCPServer server(kq, 1112);
-        string mes;
+        HTTPServer server(1112);
+
+        server.set_request_callback([&server](HTTPRequest request, HTTPClient* c){
+            server.send_request(request, c, [c](HTTPResponse response) {
+                cout << "Got response" << endl;
+                //cout << endl << response.to_string();
+                c->send_response(response);
+                //c.send_response(response);
+            });
+        });
+
+        server.run();
+
+
+        /*
         server.set_accept_callback([&server](client* c){
             std::cout << "client " << c->get_fd() << " connected" << std::endl;
         });
@@ -46,45 +59,13 @@ int main ()
                 cout << message << endl;
             });
             c2->send(message);
-
-
-
-            /*
-            request req;
-            req.method = "GET";
-            req.host = "www.opera.com";
-            req.uri = "/";
-            req.version = "HTTP/1.1";
-
-            client* c2 = server.connect_to(req.host, 80);
-            c2->set_read_callback([c](std::string message, client* c2){
-                c->send(message);
-            });
-            c2->send(req.build());
-             */
-            //c->close();
-            //int sock = server.connect_to("localhost", 1113);
         });
 
         server.set_disconnect_callback([&server](client* c){
             std::cout << "client " << c->get_fd() << " disconnected" << std::endl;
         });
+         */
 
-/*
-        request req;
-        req.method = "GET";
-        req.host = "www.example.com";
-        req.uri = "/";
-        req.version = "HTTP/1.1";
-
-        client* c2 = server.connect_to(req.host, 80);
-        c2->set_read_callback([](std::string message, client* c2){
-            std::cout << message << std::endl;
-        });
-        c2->send(req.build());
-*/
-
-        kq.run();
     } catch (tcp_exception exc) {
         cout << exc.message << endl;
     }

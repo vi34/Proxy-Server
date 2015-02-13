@@ -46,7 +46,7 @@ struct tcp_socket
             throw tcp_exception("ERROR on accept");
         }
         //
-        fcntl(fd, F_SETFL, O_NONBLOCK);
+        //fcntl(fd, F_SETFL, O_NONBLOCK);
     }
 
     tcp_socket(tcp_socket &&s)

@@ -16,8 +16,6 @@ int client::get_fd()
 
 void client::event()
 {
-
-
     std::vector<char> mess;
     std::string message = "";
     char buffer[BUF_SIZE];

@@ -25,8 +25,8 @@ int main(int argc, char *argv[])
             std::cout << message << std::endl;
         });
 
-        remote->send("OPTIONS / HTTP/1.1\r\nHost: www.example.com\r\n\r\n");
-        //remote->send("GET / HTTP/1.1\r\nHost: www.opera.com\r\n\r\n");
+        //remote->send("OPTIONS / HTTP/1.1\r\nHost: www.example.com\r\n\r\n");
+        remote->send("GET / HTTP/1.1\r\nHost: www.opera.com\r\n\r\n");
 
         kq.run();
 

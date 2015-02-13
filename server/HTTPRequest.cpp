@@ -7,24 +7,51 @@
 //
 
 #include <cstdio>
-#include <string>
+#include "HTTPRequest.h"
 
-struct request {
-    const std::string VERSION = "1.1";
-    std::string method;
-    std::string uri;
-    std::string version;
-    std::string host;
-//"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
-    std::string build()
-    {
-        std::string res;
-        res = method + " " + uri + " " + version + "\r\nHost: " + host + "\r\n\r\n";
+void HTTPRequest::parse()
+{
+    if(!start_line_parsed) {
+        method = input.substr(0,input.find(" "));
+        input = input.substr(input.find(" ") + 1);
+        uri = input.substr(0, input.find(" "));
+        input = input.substr(input.find(" ") + 1);
+        version = input.substr(0, input.find("\r\n"));
+        input = input.substr(input.find("\r\n") + 2);
+        start_line_parsed = true;
+    }
+    if(!headers_parsed) {
+        while(!headers_parsed) {
+            int line = input.find("\r\n");
+            if(line == 0) {
+                headers_parsed = true;
+                break;
+            }
+            if(line == -1) {//
+                int a = 241;
+            }
+            std::string current = input.substr(0,line);
+            std::string header,value;
+            header = current.substr(0,input.find(":"));
+            value = current.substr(current.find(":") + 2);
+            if (header == "Host")
+                host = value;
+            input = input.substr(line + 2);
+            headers[header] = value;
 
-        return res;
+        }
     }
 
-private:
+}
 
+std::string HTTPRequest::to_string()
+{
+    std::string res = method + " " + uri + " " + version + "\r\n";
+    for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
+    {
+        res += (*it).first + ": " + (*it).second + "\r\n";
+    }
+    res += "\r\n";
+    return res;
+}
 
-};
