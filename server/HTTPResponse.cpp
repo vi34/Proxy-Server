@@ -38,6 +38,8 @@ void HTTPResponse::parse()
             std::string header,value;
             header = current.substr(0,input.find(":"));
             value = current.substr(current.find(":") + 2);
+            std::transform(header.begin(), header.end(), header.begin(), ::tolower);  // Transfer <-> transfer
+            std::transform(value.begin(), value.end(), value.begin(), ::tolower);
             input = input.substr(line + 2);
             headers[header] = value;
         }
@@ -62,10 +64,11 @@ void HTTPResponse::parse()
                         }
                         input = input.substr(input.find("\r\n") + 2);
                     }
-                    int len = input.length();
+                    long len = input.length();
                     //printf("%d", len);
                     //int chunk_end = input.find("\r\n");
                     if(len < chunk_size) { // got part of data
+                        printf("waiting for another %ld",chunk_size - len);
                         partly_data = true;
                         break;
                     }
@@ -77,17 +80,28 @@ void HTTPResponse::parse()
                 // unknown encoding - should return 501 and close connection
             }
         }
-        else if(headers.find("Content-Length") != headers.end()) {
-            body = input.substr(2);
-            input = input.substr(2);
+        else if(headers.find("content-length") != headers.end()) {
+            if(!partly_data) {
+                input = input.substr(2);
+            }
             long len = input.length();
-            long cl =  std::stol(headers["Content-Length"]);
-            if(len != cl)
-                printf("\r\n Content-Length mismatch: %ld - %ld \r\n %s",len,cl, this->to_string().c_str());
-            else
+            long cl =  std::stol(headers["content-length"]);
+            std::string test = input.substr(len - 10);
+            if(len < cl)
+            {
+                partly_data = true;
+                // check connection - if closed - cl mismatch
+            }
+            else if(len == cl)
+            {
+                body = input;
                 body_parsed = true;
+            } else {
+                printf("\r\n Content-Length mismatch: recieved %ld - need %ld \r\n %s",len,cl, this->to_string().c_str());
+            }
         } else {
             body = input.substr(2);
+            body_parsed = true;
         }
     }
 }

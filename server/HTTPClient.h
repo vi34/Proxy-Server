@@ -12,14 +12,16 @@
 struct HTTPServer;
 
 struct HTTPClient {
-    HTTPClient() {}
-    HTTPClient(const HTTPClient &c) = delete;
-    HTTPClient(HTTPClient &c):tcp_client(c.tcp_client) {}
-    HTTPClient(HTTPClient &&c):tcp_client(c.tcp_client) {}
+    HTTPClient(){}
+    HTTPClient(client* tcp_c):tcp_client(tcp_c) {}
+    HTTPClient(HTTPClient &c):tcp_client(c.tcp_client) {c.tcp_client = nullptr;}
+    HTTPClient(HTTPClient &&c):tcp_client(c.tcp_client) {c.tcp_client = nullptr;}
+    HTTPClient(HTTPClient const &c) = delete;
+    ~HTTPClient();
 
     void send_response(HTTPResponse);
     client* tcp_client;
-    HTTPResponse response;
+    HTTPResponse response;  // TODO: *response new/delete
 };
 
 

@@ -49,7 +49,12 @@ void client::event()
             {
                 std::cout << "caught exception" << std::endl;
             }
+
+            printf("  %d",socket.fd);
             server->clients.erase(socket.fd);
+
+            printf("  %d",socket.fd);
+            //server->clients.erase(socket.fd);
             return;
         }
         else {

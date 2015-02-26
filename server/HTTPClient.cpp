@@ -12,3 +12,10 @@ void HTTPClient::send_response(HTTPResponse response)
 {
     tcp_client->send(response.to_string());
 }
+
+HTTPClient::~HTTPClient()
+{
+    if (tcp_client != nullptr) {
+        tcp_client->close();
+    }
+}
