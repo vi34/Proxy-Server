@@ -17,18 +17,18 @@
 using namespace std;
 
 long long INF = 10000000000;
-
 int main ()
 {
+    
     try {
         HTTPServer server(1112);
 
         server.set_request_callback([&server](HTTPRequest request, HTTPClient* c){
             server.send_request(request, c, [&request,c](HTTPResponse response) {
-                cout << endl << "Got response " << request.host;
-                cout << endl << response.to_string();
+                cout << endl << "Got response";
+                //cout << endl << response.to_string();
                 c->send_response(response);
-                cout << endl << "^ Sent " << c->tcp_client->get_fd() <<  endl;
+                cout << ", Sent to " << c->tcp_client->get_fd() <<  endl;
                 //c.send_response(response);
             });
         });

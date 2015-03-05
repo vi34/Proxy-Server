@@ -16,7 +16,7 @@ struct HTTPResponse {
     std::string version;
     std::string reason;
     int status_code;
-    int chunk_size;
+    unsigned int chunk_size;
 
     void parse();
     std::string to_string();

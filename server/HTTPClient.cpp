@@ -15,7 +15,7 @@ void HTTPClient::send_response(HTTPResponse response)
 
 HTTPClient::~HTTPClient()
 {
-    if (tcp_client != nullptr) {
-        tcp_client->close();
-    }
+    //if (tcp_client != nullptr) {
+      //  tcp_client->close();
+    //}
 }

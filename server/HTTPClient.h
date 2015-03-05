@@ -21,7 +21,10 @@ struct HTTPClient {
 
     void send_response(HTTPResponse);
     client* tcp_client;
+    client* tcp_remote = nullptr;
     HTTPResponse response;  // TODO: *response new/delete
+    bool wait_response = false;
+
 };
 
 

@@ -14,7 +14,6 @@ bool HTTPResponse::correct() {
 
 void HTTPResponse::parse()
 {
-    //printf("%s",input.c_str());
     if(!start_line_parsed) {
         version = input.substr(0,input.find(" "));
         input = input.substr(input.find(" ") + 1);
@@ -34,12 +33,15 @@ void HTTPResponse::parse()
             if(line == -1) {//
                 printf("strange, line = -1");
             }
-            std::string current = input.substr(0,line);
+            std::string current = input.substr(0,line);//check for keep-alive
             std::string header,value;
             header = current.substr(0,input.find(":"));
             value = current.substr(current.find(":") + 2);
             std::transform(header.begin(), header.end(), header.begin(), ::tolower);  // Transfer <-> transfer
             std::transform(value.begin(), value.end(), value.begin(), ::tolower);
+            if(header == "connection") {
+                printf("connection: %s\r\n",value.c_str());
+            }
             input = input.substr(line + 2);
             headers[header] = value;
         }
@@ -57,7 +59,12 @@ void HTTPResponse::parse()
                 while(input.length() > 0) {
                     if(!partly_data)
                     {
-                        chunk_size = std::stoi(input.substr(0, input.find("\r\n")), nullptr, 16);
+                        std::string num = input.substr(0, input.find("\r\n"));
+                        try {
+                            chunk_size = std::stoul(num, nullptr, 16);
+                        } catch (...) {
+                            printf("stoi exception %s\r\n\r\n", num.c_str());
+                        }
                         if(chunk_size == 0) {
                             body_parsed = true;
                             break;
@@ -68,7 +75,7 @@ void HTTPResponse::parse()
                     //printf("%d", len);
                     //int chunk_end = input.find("\r\n");
                     if(len < chunk_size) { // got part of data
-                        printf("waiting for another %ld",chunk_size - len);
+                        printf("waiting for another %ld\r\n",chunk_size - len);
                         partly_data = true;
                         break;
                     }
@@ -86,10 +93,10 @@ void HTTPResponse::parse()
             }
             long len = input.length();
             long cl =  std::stol(headers["content-length"]);
-            std::string test = input.substr(len - 10);
             if(len < cl)
             {
                 partly_data = true;
+                printf("waiting for another %ld (total %ld)\r\n",cl - len, cl);
                 // check connection - if closed - cl mismatch
             }
             else if(len == cl)

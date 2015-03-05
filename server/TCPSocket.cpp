@@ -65,6 +65,8 @@ struct tcp_socket
 
     ~tcp_socket()
     {
+        if(fd > 0)
+            printf("closed %d\r\n",fd);
         close(fd);
     }
 };

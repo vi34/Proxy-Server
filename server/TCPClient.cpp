@@ -16,7 +16,6 @@ int client::get_fd()
 
 void client::event()
 {
-    std::vector<char> mess;
     std::string message = "";
     char buffer[BUF_SIZE];
     ssize_t nread;
@@ -32,7 +31,7 @@ void client::event()
             if(message != "")
             {
                 try {
-                  do_on_read(message, this);
+                    do_on_read(std::move(message), this);
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
                 } catch (...)
@@ -42,7 +41,7 @@ void client::event()
             }
 
             try {
-                server->do_on_disconnect(this);
+                do_on_disconnect(this);
             } catch (tcp_exception e) {
                 std::cout << e.message << std::endl;
             } catch (...)
@@ -50,11 +49,11 @@ void client::event()
                 std::cout << "caught exception" << std::endl;
             }
 
-            printf("  %d",socket.fd);
+            printf("erase  %d ",socket.fd);
+            if(server->clients.size() == 0) {
+                printf("bad tcp map!\r\n");
+            }
             server->clients.erase(socket.fd);
-
-            printf("  %d",socket.fd);
-            //server->clients.erase(socket.fd);
             return;
         }
         else {
@@ -64,7 +63,10 @@ void client::event()
 
     try {
         int kk = message.length();
-        do_on_read(message, this);
+        if(message == "") {
+            printf("bad message \r\n");
+        }
+        do_on_read(std::move(message), this);
     } catch (tcp_exception e) {
         std::cout << e.message << std::endl;
     } catch (...)
@@ -85,6 +87,7 @@ void client::send(std::string message)
 
 void client::close()
 {
+    //do_on_disconnect(this);
     server->clients.erase(socket.fd);
 }
 

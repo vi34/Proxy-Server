@@ -61,6 +61,7 @@ void TCPServer::event()
         int tmp_fd = s_tmp.fd;
         client t(this,s_tmp);
         t.set_read_callback(do_on_read);
+        t.set_disconnect_callback(do_on_disconnect);
         clients.insert(std::pair<int, client>(tmp_fd,t));
 
         kq.add_to_watch(&clients[tmp_fd]);
@@ -104,6 +105,7 @@ client* TCPServer::connect_to(std::string addr, int port)
     int tmp_fd = s_tmp.fd;
     client t(this,s_tmp);
     t.set_read_callback(do_on_read);
+    t.set_disconnect_callback(do_on_disconnect);
     clients.insert(std::pair<int, client>(tmp_fd,t));
     kq.add_to_watch(&clients[tmp_fd]);
 
