@@ -19,6 +19,9 @@ void HTTPRequest::parse()
         version = input.substr(0, input.find("\r\n"));
         input = input.substr(input.find("\r\n") + 2);
         start_line_parsed = true;
+
+        if(version == "HTTP/1.1")
+            keep_alive = true;
     }
     if(!headers_parsed) {
         while(!headers_parsed) {
@@ -28,17 +31,21 @@ void HTTPRequest::parse()
                 break;
             }
             if(line == -1) {//
-                int a = 241;
             }
             std::string current = input.substr(0,line);
             std::string header,value;
             header = current.substr(0,input.find(":"));
             value = current.substr(current.find(":") + 2);
-            if (header == "Host")
+            if (header == "Host") {
                 host = value;
+            } else if(header == "connection") {
+                if(value != "close")
+                    keep_alive = true;
+                else
+                    keep_alive = false;
+            }
             input = input.substr(line + 2);
             headers[header] = value;
-
         }
     }
 

@@ -9,12 +9,12 @@
 #include "TCPCLient.h"
 const int BUF_SIZE = 1025;
 
-int client::get_fd()
+int Client::get_fd()
 {
     return socket.fd;
 }
 
-void client::event()
+void Client::event()
 {
     std::string message = "";
     char buffer[BUF_SIZE];
@@ -48,8 +48,6 @@ void client::event()
             {
                 std::cout << "caught exception" << std::endl;
             }
-
-            printf("erase  %d ",socket.fd);
             if(server->clients.size() == 0) {
                 printf("bad tcp map!\r\n");
             }
@@ -57,12 +55,14 @@ void client::event()
             return;
         }
         else {
-            message.append(buffer, 0, nread);
+            printf("socket %d: read %d bytes, buffer %d-", socket.fd, nread, message.length());
+            message.append(buffer,nread);
+            printf ("%d\n", message.length());
+             //printf("%s\n\n%s", buffer,message.c_str());
         }
     } while (nread == BUF_SIZE);
 
     try {
-        int kk = message.length();
         if(message == "") {
             printf("bad message \r\n");
         }
@@ -76,16 +76,15 @@ void client::event()
 
 }
 
-void client::send(std::string message)
+void Client::send(std::string message)
 {
     ssize_t n;
     n = ::send(socket.fd, message.c_str(), message.length(), 0);
-    int k = message.length();
     if (n < 0 )
         throw tcp_exception("ERROR writing to socket");
 }
 
-void client::close()
+void Client::close()
 {
     //do_on_disconnect(this);
     server->clients.erase(socket.fd);

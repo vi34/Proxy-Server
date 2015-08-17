@@ -15,28 +15,28 @@
 #include <map>
 #include <vector>
 
-struct client;
+struct Client;
 
 struct TCPServer: TCPObject {
     TCPServer(Kqueue_wrap& kq,int port);
 
-    client* connect_to(std::string addr, int port);
+    Client* connect_to(std::string addr, int port);
     virtual void event();
     virtual int get_fd();
 
-    void set_accept_callback(std::function<void(client*)> f) {do_on_accept = f;};
-    void set_read_callback(std::function<void(std::string, client*)> f) {do_on_read = f;};
-    void set_disconnect_callback(std::function<void(client*)> f) {do_on_disconnect = f;};
+    void set_accept_callback(std::function<void(Client*)> f) {do_on_accept = f;};
+    void set_read_callback(std::function<void(std::string, Client*)> f) {do_on_read = f;};
+    void set_disconnect_callback(std::function<void(Client*)> f) {do_on_disconnect = f;};
 
 private:
-    std::function<void(client*)> do_on_accept;
-    std::function<void(client*)> do_on_disconnect;
-    std::function<void(std::string, client*)> do_on_read;
+    std::function<void(Client*)> do_on_accept;
+    std::function<void(Client*)> do_on_disconnect;
+    std::function<void(std::string, Client*)> do_on_read;
     tcp_socket listener;
     Kqueue_wrap& kq;
-    std::map<int, client> clients;
+    std::map<int, Client> clients;
 
-    friend struct client;
+    friend struct Client;
 
 };
 

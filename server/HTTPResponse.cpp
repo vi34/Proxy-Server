@@ -50,9 +50,12 @@ void HTTPResponse::parse()
     {
         body_parsed = true;
     } else {
+        //  //tools.ietf.org/html/rfc2616#section-4.4 -- chunked
+        // //www.mysterylife.ru/navodneniya/pensilvaniya
         //printf("%s",input.c_str());
         if(headers.find("transfer-encoding") != headers.end()) {
             if(headers["transfer-encoding"] == "chunked") {
+                printf("chunked connection \n");
                 if(input.find("\r\n") == 0) { // first chunk
                     input = input.substr(2);
                 }
@@ -113,7 +116,7 @@ void HTTPResponse::parse()
     }
 }
 
-std::string HTTPResponse::to_string()
+std::string HTTPResponse::print_headers()
 {
     std::string res = version + " " + std::to_string(status_code) + " " + reason + "\r\n";
     for(std::map<std::string,std::string>::iterator it = headers.begin(); it != headers.end(); ++it)
@@ -121,24 +124,15 @@ std::string HTTPResponse::to_string()
         res += (*it).first + ": " + (*it).second + "\r\n";
     }
     res += "\r\n";
-    res += body;
-
     return res;
+}
+
+std::string HTTPResponse::to_string()
+{
+
+    return print_headers() + body;
 }
 
 std::string HTTPResponse::get_body() {
     return body;
-}
-
-void HTTPResponse::clear() {
-    input = "";
-    body = "";
-    version = "";
-    reason = "";
-    status_code = 0;
-    headers.clear();
-    body_parsed = false;
-    start_line_parsed = false;
-    headers_parsed = false;
-    partly_data = false;
 }

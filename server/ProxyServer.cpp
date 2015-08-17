@@ -5,6 +5,7 @@
 //  Created by Виктор Шатров on 18.11.14.
 //  Copyright (c) 2014 Виктор Шатров. All rights reserved.
 //
+
 #include <cstring>
 #include <cstdio>
 #include <iostream>
@@ -12,6 +13,8 @@
 #include "TCPServer.h"
 #include "HTTPServer.h"
 #include "HTTPClient.h"
+
+
 
 
 using namespace std;
@@ -23,12 +26,13 @@ int main ()
     try {
         HTTPServer server(1112);
 
-        server.set_request_callback([&server](HTTPRequest request, HTTPClient* c){
-            server.send_request(request, c, [&request,c](HTTPResponse response) {
-                cout << endl << "Got response";
+        server.set_request_callback([&server](HTTPRequest request, HTTPClient* client){
+            server.send_request(request, client, [request, client](HTTPResponse* response) { // &request ?
+                cout << "Got response from " << request.host;
                 //cout << endl << response.to_string();
-                c->send_response(response);
-                cout << ", Sent to " << c->tcp_client->get_fd() <<  endl;
+                client->send_response(response);
+                cout << ", Sent to " << client->tcp_client->get_fd() <<  endl;
+                delete response;
                 //c.send_response(response);
             });
         });

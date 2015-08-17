@@ -15,17 +15,17 @@ struct HTTPResponse {
     std::string input;
     std::string version;
     std::string reason;
+    std::string body; // should be private?
     int status_code;
     unsigned int chunk_size;
 
     void parse();
+    std::string print_headers();
     std::string to_string();
     std::string get_body();
     bool correct();
-    void clear();
 
 private:
-    std::string body;
     bool headers_parsed = false;
     bool start_line_parsed = false;
     bool body_parsed = false;

@@ -8,14 +8,13 @@
 
 #include "HTTPClient.h"
 
-void HTTPClient::send_response(HTTPResponse response)
+void HTTPClient::send_response(HTTPResponse* response)
 {
-    tcp_client->send(response.to_string());
+    tcp_client->send(response->to_string());
+    // check keep-alive
 }
 
 HTTPClient::~HTTPClient()
 {
-    //if (tcp_client != nullptr) {
-      //  tcp_client->close();
-    //}
+    delete response;
 }

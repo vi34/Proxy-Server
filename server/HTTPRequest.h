@@ -17,6 +17,7 @@ struct HTTPRequest {
     std::string host;
     std::string input;
     bool is_correct();
+    bool keep_alive = false;
     void parse();
     //"GET / HTTP/1.1\r\nHost: www.example.com\r\n\r\n"
     std::string to_string();

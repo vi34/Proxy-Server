@@ -12,7 +12,7 @@ struct HTTPServer {
     HTTPServer(int port);
 
     void run();
-    void send_request(HTTPRequest,HTTPClient*, std::function<void(HTTPResponse)>);
+    void send_request(HTTPRequest,HTTPClient*, std::function<void(HTTPResponse*)>);
 
     void set_request_callback(std::function<void(HTTPRequest, HTTPClient*)> f) {do_on_request = f;};
     void set_disconnect_callback(std::function<void(HTTPClient*)> f) {do_on_disconnect = f;};

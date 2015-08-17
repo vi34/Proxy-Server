@@ -44,9 +44,9 @@ TCPServer::TCPServer(Kqueue_wrap& kq_i, int port):kq(kq_i)
         throw tcp_exception("listen");
     }
 
-    do_on_disconnect = [](client*){};
-    do_on_accept = [](client*){};
-    do_on_read = [](std::string, client*){};
+    do_on_disconnect = [](Client*){};
+    do_on_accept = [](Client*){};
+    do_on_read = [](std::string, Client*){};
     kq.add_to_watch(this);
 
 }
@@ -59,10 +59,10 @@ void TCPServer::event()
     try {
         tcp_socket s_tmp(listener.fd, (sockaddr *) &client_addr, &client_len);
         int tmp_fd = s_tmp.fd;
-        client t(this,s_tmp);
+        Client t(this,s_tmp);
         t.set_read_callback(do_on_read);
         t.set_disconnect_callback(do_on_disconnect);
-        clients.insert(std::pair<int, client>(tmp_fd,t));
+        clients.insert(std::pair<int, Client>(tmp_fd,t));
 
         kq.add_to_watch(&clients[tmp_fd]);
         do_on_accept(&clients[tmp_fd]);
@@ -81,7 +81,7 @@ int TCPServer::get_fd()
     return listener.fd;
 }
 
-client* TCPServer::connect_to(std::string addr, int port)
+Client* TCPServer::connect_to(std::string addr, int port)
 {
     sockaddr_in serv_addr;
     hostent *server;
@@ -103,10 +103,10 @@ client* TCPServer::connect_to(std::string addr, int port)
         throw tcp_exception("ERROR connecting");
     }
     int tmp_fd = s_tmp.fd;
-    client t(this,s_tmp);
+    Client t(this,s_tmp);
     t.set_read_callback(do_on_read);
     t.set_disconnect_callback(do_on_disconnect);
-    clients.insert(std::pair<int, client>(tmp_fd,t));
+    clients.insert(std::pair<int, Client>(tmp_fd,t));
     kq.add_to_watch(&clients[tmp_fd]);
 
     return &clients[tmp_fd];
