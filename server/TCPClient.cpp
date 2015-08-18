@@ -55,9 +55,9 @@ void Client::event()
             return;
         }
         else {
-            printf("socket %d: read %d bytes, buffer %d-", socket.fd, nread, message.length());
+           // printf("socket %d: read %d bytes, buffer %d-", socket.fd, nread, message.length());
             message.append(buffer,nread);
-            printf ("%d\n", message.length());
+            //printf ("%d\n", message.length());
              //printf("%s\n\n%s", buffer,message.c_str());
         }
     } while (nread == BUF_SIZE);

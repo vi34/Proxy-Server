@@ -41,6 +41,15 @@ void HTTPResponse::parse()
             std::transform(value.begin(), value.end(), value.begin(), ::tolower);
             if(header == "connection") {
                 printf("connection: %s\r\n",value.c_str());
+            } else if (header == "transfer-encoding") {
+                if(value == "chunked") {
+                    encoding = CHUNKED;
+                    printf("chunked connection\n");
+                } else {
+                    printf("unknown encoding: %s", value.c_str()); //  should return 501 and close connection
+                }
+            } else if (header == "content-length") {
+                encoding = CONTENT_LENGTH;
             }
             input = input.substr(line + 2);
             headers[header] = value;
@@ -53,44 +62,39 @@ void HTTPResponse::parse()
         //  //tools.ietf.org/html/rfc2616#section-4.4 -- chunked
         // //www.mysterylife.ru/navodneniya/pensilvaniya
         //printf("%s",input.c_str());
-        if(headers.find("transfer-encoding") != headers.end()) {
-            if(headers["transfer-encoding"] == "chunked") {
-                printf("chunked connection \n");
-                if(input.find("\r\n") == 0) { // first chunk
-                    input = input.substr(2);
-                }
-                while(input.length() > 0) {
-                    if(!partly_data)
-                    {
-                        std::string num = input.substr(0, input.find("\r\n"));
-                        try {
-                            chunk_size = std::stoul(num, nullptr, 16);
-                        } catch (...) {
-                            printf("stoi exception %s\r\n\r\n", num.c_str());
-                        }
-                        if(chunk_size == 0) {
-                            body_parsed = true;
-                            break;
-                        }
-                        input = input.substr(input.find("\r\n") + 2);
+        if(encoding == CHUNKED) {
+            if(input.find("\r\n") == 0) { // first chunk
+                input = input.substr(2);
+            }
+            while(input.length() > 0) {
+                if(!partly_data)
+                {
+                    std::string num = input.substr(0, input.find("\r\n"));
+                    try {
+                        chunk_size = std::stoul(num, nullptr, 16);
+                    } catch (...) {
+                        printf("stoi exception %s\r\n\r\n", num.c_str());
                     }
-                    long len = input.length();
-                    //printf("%d", len);
-                    //int chunk_end = input.find("\r\n");
-                    if(len < chunk_size) { // got part of data
-                        printf("waiting for another %ld\r\n",chunk_size - len);
-                        partly_data = true;
+                    if(chunk_size == 0) {
+                        body_parsed = true;
                         break;
                     }
-                    body += input.substr(0, chunk_size);
-                    input = input.substr(chunk_size + 2);
-                    partly_data = false;
+                    input = input.substr(input.find("\r\n") + 2);
                 }
-            } else {
-                // unknown encoding - should return 501 and close connection
+                long len = input.length();
+                //printf("%d", len);
+                //int chunk_end = input.find("\r\n");
+                if(len < chunk_size) { // got part of data
+                    printf("waiting for another %ld\r\n",chunk_size - len);
+                    partly_data = true;
+                    break;
+                }
+                body += input.substr(0, chunk_size);
+                input = input.substr(chunk_size + 2);
+                partly_data = false;
             }
         }
-        else if(headers.find("content-length") != headers.end()) {
+        else if(encoding == CONTENT_LENGTH) {
             if(!partly_data) {
                 input = input.substr(2);
             }

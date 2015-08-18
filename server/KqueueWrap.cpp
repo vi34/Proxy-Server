@@ -68,7 +68,6 @@ void Kqueue_wrap::run()
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
                 }
-
             }
         }
     }

@@ -11,12 +11,15 @@
 #include <string>
 #include <map>
 
+enum Encoding {CHUNKED, CONTENT_LENGTH, OTHER};
+
 struct HTTPResponse {
     std::string input;
     std::string version;
     std::string reason;
     std::string body; // should be private?
     int status_code;
+    Encoding encoding = OTHER;
     unsigned int chunk_size;
 
     void parse();
@@ -24,6 +27,9 @@ struct HTTPResponse {
     std::string to_string();
     std::string get_body();
     bool correct();
+
+
+
 
 private:
     bool headers_parsed = false;

@@ -14,8 +14,11 @@
 #include "HTTPServer.h"
 #include "HTTPClient.h"
 
-
-
+/*working sites:
+www.example.org
+www.iana.org
+www.forum.ispsystem.com/
+*/
 
 using namespace std;
 
