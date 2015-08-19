@@ -85,7 +85,7 @@ void HTTPResponse::parse()
                 //printf("%d", len);
                 //int chunk_end = input.find("\r\n");
                 if(len < chunk_size) { // got part of data
-                    printf("waiting for another %ld\r\n",chunk_size - len);
+                    //printf("waiting for another %ld\r\n",chunk_size - len);
                     partly_data = true;
                     break;
                 }
@@ -103,7 +103,7 @@ void HTTPResponse::parse()
             if(len < cl)
             {
                 partly_data = true;
-                printf("waiting for another %ld (total %ld)\r\n",cl - len, cl);
+                //printf("waiting for another %ld (total %ld)\r\n",cl - len, cl);
                 // check connection - if closed - cl mismatch
             }
             else if(len == cl)

@@ -10,7 +10,7 @@
 #define server_TCPObject_h
 
 struct TCPObject {
-    virtual void event() = 0;
+    virtual void event(int) = 0;
     virtual int get_fd() = 0;
 };
 

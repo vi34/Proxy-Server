@@ -47,12 +47,12 @@ TCPServer::TCPServer(Kqueue_wrap& kq_i, int port):kq(kq_i)
     do_on_disconnect = [](Client*){};
     do_on_accept = [](Client*){};
     do_on_read = [](std::string, Client*){};
-    kq.add_to_watch(this);
+    kq.add_to_watch(this, 1);
 
 }
 
 
-void TCPServer::event()
+void TCPServer::event(int filter)
 {
     socklen_t client_len;
     sockaddr_in client_addr;
@@ -64,7 +64,7 @@ void TCPServer::event()
         t.set_disconnect_callback(do_on_disconnect);
         clients.insert(std::pair<int, Client>(tmp_fd,t));
 
-        kq.add_to_watch(&clients[tmp_fd]);
+        kq.add_to_watch(&clients[tmp_fd], 1);
         do_on_accept(&clients[tmp_fd]);
 
     } catch (tcp_exception e) {
@@ -107,7 +107,7 @@ Client* TCPServer::connect_to(std::string addr, int port)
     t.set_read_callback(do_on_read);
     t.set_disconnect_callback(do_on_disconnect);
     clients.insert(std::pair<int, Client>(tmp_fd,t));
-    kq.add_to_watch(&clients[tmp_fd]);
+    kq.add_to_watch(&clients[tmp_fd], 1);
 
     return &clients[tmp_fd];
 

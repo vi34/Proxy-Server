@@ -22,7 +22,8 @@
 struct Kqueue_wrap{
     Kqueue_wrap();
     ~Kqueue_wrap();
-    void add_to_watch(TCPObject *obj);
+    void add_to_watch(TCPObject *obj, int rw);
+    void remove_from_watching(TCPObject *obj, int rw);
     void run();
     int get_fd() {return this->fd;}
 

@@ -21,15 +21,33 @@ Kqueue_wrap::~Kqueue_wrap()
     close(fd);
 }
 
-void Kqueue_wrap::add_to_watch(TCPObject *obj)
+void Kqueue_wrap::add_to_watch(TCPObject *obj, int rw)
 {
     struct kevent ev;
-    EV_SET(&ev,obj->get_fd(), EVFILT_READ, EV_ADD, 0, 0, 0);
+    int flag = EVFILT_READ;
+    if (!rw)
+        flag = EVFILT_WRITE;
+
+    EV_SET(&ev,obj->get_fd(), flag, EV_ADD, 0, 0, 0);
     int kevent_res = kevent(fd, &ev, 1, NULL, 0, NULL);
     if (kevent_res == -1) {
         throw tcp_exception("kevent()");
     }
     watches[obj->get_fd()] = obj;
+}
+
+void Kqueue_wrap::remove_from_watching(TCPObject *obj, int rw)
+{
+    struct kevent ev;
+    int flag = EVFILT_READ;
+    if (!rw)
+        flag = EVFILT_WRITE;
+
+    EV_SET(&ev,obj->get_fd(), flag, EV_DELETE, 0, 0, 0);
+    int kevent_res = kevent(fd, &ev, 1, NULL, 0, NULL);
+    if (rw) {
+        watches.erase(obj->get_fd());
+    }
 }
 
 void Kqueue_wrap::run()
@@ -64,7 +82,7 @@ void Kqueue_wrap::run()
                 return;
             } else {
                 try {
-                    watches[ev.ident]->event();
+                    watches[ev.ident]->event((ev.filter == EVFILT_READ));
                 } catch (tcp_exception e) {
                     std::cout << e.message << std::endl;
                 }

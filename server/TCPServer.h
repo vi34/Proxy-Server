@@ -21,7 +21,7 @@ struct TCPServer: TCPObject {
     TCPServer(Kqueue_wrap& kq,int port);
 
     Client* connect_to(std::string addr, int port);
-    virtual void event();
+    virtual void event(int);
     virtual int get_fd();
 
     void set_accept_callback(std::function<void(Client*)> f) {do_on_accept = f;};

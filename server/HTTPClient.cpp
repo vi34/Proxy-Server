@@ -15,13 +15,11 @@ template< typename T >
 std::string int_to_hex( T i )
 {
     std::stringstream stream;
-    stream << "0x"
-    << std::setfill ('0') << std::setw(sizeof(T)*2)
-    << std::hex << i;
+    stream << std::hex << i;
     return stream.str();
 }
 
-void HTTPClient::send_response(HTTPResponse* response)  // may be slow. Need add socket for writing in kqueue
+void HTTPClient::send_response(HTTPResponse* response)
 {
     if(response->encoding == CHUNKED){
         tcp_client->send(response->print_headers());
@@ -36,7 +34,6 @@ void HTTPClient::send_response(HTTPResponse* response)  // may be slow. Need add
         if (remainder) {
             tcp_client->send(int_to_hex(0) + "\r\n\r\n");
         }
-
     } else {
         tcp_client->send(response->to_string());
     }
