@@ -30,8 +30,10 @@ void HTTPResponse::parse()
                 headers_parsed = true;
                 break;
             }
-            if(line == -1) {//
+            if(line == -1) { //negotiate this response
                 printf("strange, line = -1");
+                body_parsed = true;
+                return;
             }
             std::string current = input.substr(0,line);//check for keep-alive
             std::string header,value;
@@ -46,9 +48,9 @@ void HTTPResponse::parse()
                     encoding = CHUNKED;
                     printf("chunked connection\n");
                 } else {
-                    printf("unknown encoding: %s", value.c_str()); //  should return 501 and close connection
+                    encoding = IDENTITY;
                 }
-            } else if (header == "content-length") {
+            } else if (header == "content-length" && encoding != CHUNKED) {
                 encoding = CONTENT_LENGTH;
             }
             input = input.substr(line + 2);

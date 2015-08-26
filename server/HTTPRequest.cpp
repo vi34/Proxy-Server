@@ -25,7 +25,7 @@ void HTTPRequest::parse()
     }
     if(!headers_parsed) {
         while(!headers_parsed) {
-            int line = input.find("\r\n");
+            unsigned long line = input.find("\r\n");
             if(line == 0) {
                 headers_parsed = true;
                 break;

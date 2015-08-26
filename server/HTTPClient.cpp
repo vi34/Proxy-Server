@@ -19,7 +19,7 @@ std::string int_to_hex( T i )
     return stream.str();
 }
 
-void HTTPClient::send_response(HTTPResponse* response)
+void HTTPClient::send_response(std::shared_ptr<HTTPResponse> response)
 {
     if(response->encoding == CHUNKED){
         tcp_client->send(response->print_headers());
@@ -43,8 +43,6 @@ void HTTPClient::send_response(HTTPResponse* response)
 
 HTTPClient::~HTTPClient()
 {
-    delete response;
-    
     if(tcp_remote != nullptr)
         tcp_remote->close();
 }

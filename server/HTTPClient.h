@@ -19,11 +19,11 @@ struct HTTPClient {
     HTTPClient(HTTPClient const &c) = delete;
     ~HTTPClient();
 
-    void send_response(HTTPResponse*);
+    void send_response(std::shared_ptr<HTTPResponse>);
 
     Client* tcp_client;
     Client* tcp_remote = nullptr;
-    HTTPResponse* response = nullptr;
+    std::shared_ptr<HTTPResponse> response;
     bool wait_response = false;
     bool keep_alive = false;
 };
