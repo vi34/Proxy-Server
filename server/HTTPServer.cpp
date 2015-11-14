@@ -32,8 +32,8 @@ void HTTPServer::send_request(std::shared_ptr<HTTPRequest> request, HTTPClient* 
 {
 
     http_client->keep_alive = request->keep_alive;
-
     http_client->response = std::make_shared<HTTPResponse>();
+    // need to check that host isn't changed here
     if (http_client->tcp_remote == nullptr || !http_client->keep_alive) {
         http_client->tcp_remote = tcp_server.connect_to(request->host, 80);
     }
@@ -45,7 +45,7 @@ void HTTPServer::send_request(std::shared_ptr<HTTPRequest> request, HTTPClient* 
         if (http_client == nullptr) {
             printf("ERROR: connection closed");
         } else {
-            //printf("get some info for %d  length: %lu \r\n", http_client->tcp_client->get_fd(),message.length());
+            printf("get some info for %d  length: %lu \r\n", http_client->tcp_client->get_fd(),message.length());
             http_client->response->input += message;
             try {
                 http_client->response->parse();
