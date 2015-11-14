@@ -8,8 +8,11 @@
 
 #ifndef server_HTTPRequest_h
 #define server_HTTPRequest_h
+
 #include <map>
 #include <string>
+#include <cstdio>
+
 struct HTTPRequest {
     std::string method;
     std::string uri;

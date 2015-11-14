@@ -8,9 +8,11 @@
 
 #ifndef server_TCPCLient_h
 #define server_TCPCLient_h
+
 #include "TCPObject.h"
-#include "TCPSocket.cpp"
 #include "TCPServer.h"
+#include "TCPSocket.cpp"
+
 
 struct TCPServer;
 

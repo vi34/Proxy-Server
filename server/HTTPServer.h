@@ -1,11 +1,13 @@
 #ifndef server_HTTPServer_h
 #define server_HTTPServer_h
 
+#include <memory>
+
 #include "TCPServer.h"
 #include "KqueueWrap.h"
 #include "HTTPRequest.h"
 #include "HTTPResponse.h"
-#include <memory>
+
 
 struct HTTPClient;
 

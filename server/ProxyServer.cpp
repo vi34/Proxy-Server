@@ -18,6 +18,7 @@
 #include <curl/typecheck-gcc.h>
 #include <math.h>
 #include <memory>
+
 #include "TCPServer.h"
 #include "HTTPServer.h"
 #include "HTTPClient.h"
@@ -26,7 +27,7 @@ using namespace std;
 
 long long INF = 10000000000;
 
-const long DEF_MAX_AGE = 40;//43200;
+const long DEF_MAX_AGE = 43200;
 
 /* TODO:
  TE header
@@ -50,6 +51,7 @@ long calc_current_age(std::shared_ptr<HTTPResponse> response) {
 
 int main ()
 {
+    //int shell_res = system("sudo networksetup -setwebproxystate \"Wi-Fi\" on");
     curl_global_init(CURL_GLOBAL_NOTHING);
     std::map<std::string, std::shared_ptr<HTTPResponse> > cache;
     try {
@@ -86,17 +88,19 @@ int main ()
                 printf(" age %ld\n", age);
                 client->send_response(cache[request->uri]);
             } else {
-                server.send_request(request, client, [request, client, &cache](std::shared_ptr<HTTPResponse> response) { // &request ?
-                    cout << "Got response from " << request->host;
+
+                server.send_request(request, client, [request, client, &cache](std::shared_ptr<HTTPResponse> response) {
+                    cout << "Proxy: got response from " << request->host << endl;
+                    printf("---------------------------\n%s-----------------------\n", response->print_headers().c_str());
+
                     if (!(response->status_code == 100 && request->version == "HTTTP/1.0")) {
                         client->send_response(response);
-                        cout << ", Sent to " << client->tcp_client->get_fd() <<  endl;
+                        //cout << ", Sent to " << client->tcp_client->get_fd() <<  endl;
                     }
                     bool cacheable = true;
                     if (response->headers.find("Cache-control") != response->headers.end() &&
                         (response->headers["Cache-control"].find("no-cache") ||
-                         response->headers["Cache-control"].find("no-store")))
-                    {
+                         response->headers["Cache-control"].find("no-store"))) {
                             cacheable = false;
                     }
                     if (request->method == "OPTIONS")
@@ -105,6 +109,7 @@ int main ()
                         cache[request->uri] = response;
                     }
                 });
+
             }
         });
 
@@ -114,6 +119,7 @@ int main ()
     }
     curl_global_cleanup();
     cout <<"Bye!";
+    //shell_res = system("sudo networksetup -setwebproxystate \"Wi-Fi\" off");
     return 0;
 }
 

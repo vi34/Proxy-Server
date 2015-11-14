@@ -8,7 +8,9 @@
 
 #ifndef server_HTTPClient_h
 #define server_HTTPClient_h
+
 #include "HTTPServer.h"
+
 struct HTTPServer;
 
 struct HTTPClient {

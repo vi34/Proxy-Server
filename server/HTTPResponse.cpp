@@ -3,7 +3,7 @@
 //  server
 //
 //  Created by Виктор Шатров on 10.02.15.
-//  Copyright (c) 2015 Виктор Шатров. All rights reserved222.
+//  Copyright (c) 2015 Виктор Шатров. All rights reserved.
 //
 
 #include "HTTPResponse.h"
@@ -41,12 +41,9 @@ void HTTPResponse::parse()
             value = current.substr(current.find(":") + 2);
             std::transform(header.begin(), header.end(), header.begin(), ::tolower);  // Transfer <-> transfer
             std::transform(value.begin(), value.end(), value.begin(), ::tolower);
-            if(header == "connection") {
-                printf("connection: %s\r\n",value.c_str());
-            } else if (header == "transfer-encoding") {
+            if (header == "transfer-encoding") {
                 if(value == "chunked") {
                     encoding = CHUNKED;
-                    printf("chunked connection\n");
                 } else {
                     encoding = IDENTITY;
                 }
@@ -61,9 +58,6 @@ void HTTPResponse::parse()
     {
         body_parsed = true;
     } else {
-        //  //tools.ietf.org/html/rfc2616#section-4.4 -- chunked
-        // //www.mysterylife.ru/navodneniya/pensilvaniya
-        //printf("%s",input.c_str());
         if(encoding == CHUNKED) {
             if(input.find("\r\n") == 0) { // first chunk
                 input = input.substr(2);

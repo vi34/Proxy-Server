@@ -9,7 +9,6 @@
 #ifndef server_TCPSocket_h
 #define server_TCPSocket_h
 
-
 #include <cstring>
 #include <cstdio>
 #include <sys/types.h>

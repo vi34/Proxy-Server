@@ -3,7 +3,7 @@
 //  server
 //
 //  Created by Виктор Шатров on 15.12.14.
-//  Copyright (c) 2014 Виктор Шатров. All rights reserved222.
+//  Copyright (c) 2014 Виктор Шатров. All rights reserved.
 //
 
 #include "TCPCLient.h"

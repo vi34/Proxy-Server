@@ -3,12 +3,13 @@
 //  server
 //
 //  Created by Виктор Шатров on 10.02.15.
-//  Copyright (c) 2015 Виктор Шатров. All rights reserved222.
+//  Copyright (c) 2015 Виктор Шатров. All rights reserved.
 //
 
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
 #include "HTTPClient.h"
 
 template< typename T >

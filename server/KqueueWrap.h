@@ -8,14 +8,16 @@
 
 #ifndef server_KqueueWrap_h
 #define server_KqueueWrap_h
+
 #include <sys/event.h>
 #include <vector>
-#include "TCPSocket.cpp"
-#include "TCPObject.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <map>
+
+#include "TCPSocket.cpp"
+#include "TCPObject.h"
 
 
 

@@ -8,6 +8,7 @@
 
 #ifndef server_HTTPResponse_h
 #define server_HTTPResponse_h
+
 #include <string>
 #include <map>
 

@@ -8,12 +8,14 @@
 
 #ifndef server_TCPServer_h
 #define server_TCPServer_h
-#include "TCPSocket.cpp"
-#include "KqueueWrap.h"
-#include "TCPObject.h"
-#include "TCPCLient.h"
+
 #include <map>
 #include <vector>
+
+#include "TCPSocket.cpp"
+#include "TCPObject.h"
+#include "TCPCLient.h"
+#include "KqueueWrap.h"
 
 struct Client;
 

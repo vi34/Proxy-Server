@@ -6,7 +6,6 @@
 //  Copyright (c) 2014 Виктор Шатров. All rights reserved.
 //
 
-#include <cstdio>
 #include "HTTPRequest.h"
 
 void HTTPRequest::parse()
