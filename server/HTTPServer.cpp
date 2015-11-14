@@ -8,7 +8,7 @@ HTTPServer::HTTPServer(int port):tcp_server(kq,port)
     tcp_server.set_accept_callback([this](Client* c){
         HTTPClient h_client(c);
         clients.insert(std::pair<int, HTTPClient>(c->get_fd(),h_client));
-        //std::cout << std::endl << "new connection " << c->get_fd() << std::endl;
+        std::cout << std::endl << "new connection " << c->get_fd() << std::endl;
     });
 
     tcp_server.set_read_callback([this](std::string in, Client* c){
@@ -19,7 +19,7 @@ HTTPServer::HTTPServer(int port):tcp_server(kq,port)
     });
     tcp_server.set_disconnect_callback([this](Client* c) {
         clients.erase(c->get_fd());
-        //printf("connection %d closed\r\n", c->get_fd());
+        printf("connection %d closed\r\n", c->get_fd());
     });
 }
 
@@ -39,12 +39,13 @@ void HTTPServer::send_request(std::shared_ptr<HTTPRequest> request, HTTPClient* 
     }
 
     time_t request_time = time(0);
-    //printf("server request(%d) connection: %d\r\n", http_client->tcp_client->get_fd(), http_client->tcp_remote->get_fd());
+    printf("server request(%d) connection: %d\r\n", http_client->tcp_client->get_fd(), http_client->tcp_remote->get_fd());
 
     http_client->tcp_remote->set_read_callback([callback, http_client, request_time, this](std::string message, Client* c){
         if (http_client == nullptr) {
             printf("ERROR: connection closed");
         } else {
+            //printf("get some info for %d  length: %lu \r\n", http_client->tcp_client->get_fd(),message.length());
             http_client->response->input += message;
             try {
                 http_client->response->parse();
@@ -54,6 +55,7 @@ void HTTPServer::send_request(std::shared_ptr<HTTPRequest> request, HTTPClient* 
             if(http_client->response->correct()) {
                 http_client->response->response_time = time(0);
                 http_client->response->request_time = request_time;
+                printf("---------------------------\n%s-----------------------\n", http_client->response->print_headers().c_str());
                 http_client->wait_response = false;
                 callback(http_client->response);
                 if(!http_client->keep_alive) {
@@ -67,7 +69,7 @@ void HTTPServer::send_request(std::shared_ptr<HTTPRequest> request, HTTPClient* 
     });
 
     http_client->tcp_remote->set_disconnect_callback([http_client, callback, this](Client* c){
-        if(http_client->wait_response) {    // look at standard what to do - retry request?
+        if(http_client->wait_response) {  
             printf("!!\n%s\n\n", http_client->response->body.c_str());
             http_client->response->body+= http_client->response->input;
             printf("!!\n%s\n\n", http_client->response->body.c_str());

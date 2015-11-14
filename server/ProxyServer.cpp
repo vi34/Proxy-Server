@@ -29,12 +29,6 @@ long long INF = 10000000000;
 
 const long DEF_MAX_AGE = 43200;
 
-/* TODO:
- TE header
- HTTP pipeline (multiple requests at once)
- OPTIONS - Max forwards
- 304 - Not Modified
- */
 
 long calc_current_age(std::shared_ptr<HTTPResponse> response) {
     time_t date_value = curl_getdate(response->headers["date"].c_str(), NULL);
